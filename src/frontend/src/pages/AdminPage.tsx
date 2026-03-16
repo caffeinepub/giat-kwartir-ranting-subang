@@ -38,6 +38,18 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { toast } from "sonner";
 import { Variant_pending_approved } from "../backend";
 import type { KwartirRanting, Penilaian } from "../backend";
@@ -61,6 +73,16 @@ const BULAN_ID = [
   "November",
   "Desember",
 ];
+
+const CHART_COLORS = [
+  "#22553b",
+  "#4ade80",
+  "#16a34a",
+  "#86efac",
+  "#15803d",
+  "#bbf7d0",
+];
+const PIE_COLORS = ["#22553b", "#d1fae5"];
 
 function formatTanggalID(date: Date): string {
   return `${date.getDate()} ${BULAN_ID[date.getMonth()]} ${date.getFullYear()}`;
@@ -304,6 +326,19 @@ export default function AdminPage() {
       ? (allSorted || []).find(([, p]) => p != null)
       : null;
 
+  // Chart data
+  const barChartData = (allSorted || [])
+    .filter(([, p]) => p != null)
+    .map(([kr, p]) => ({
+      nama: kr.namaKwartirRanting.replace("Kwartir Ranting ", "KR "),
+      skor: p?.skorTotal ?? 0,
+    }));
+
+  const pieChartData = [
+    { name: "Sudah Dinilai", value: totalDinilai },
+    { name: "Belum Dinilai", value: totalBelumDinilai },
+  ].filter((d) => d.value > 0);
+
   const menuItems: {
     id: ActiveMenu;
     label: string;
@@ -525,6 +560,139 @@ export default function AdminPage() {
                         <span className="text-muted-foreground text-sm">
                           Belum ada data
                         </span>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Bar Chart - Skor Total */}
+                  <Card data-ocid="admin.score_chart.card">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">
+                        Perbandingan Skor Total KR
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingKR ? (
+                        <div
+                          className="space-y-2"
+                          data-ocid="admin.score_chart.loading_state"
+                        >
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-36 w-full" />
+                        </div>
+                      ) : barChartData.length === 0 ? (
+                        <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
+                          Belum ada data penilaian
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={220}>
+                          <BarChart
+                            data={barChartData}
+                            margin={{ top: 4, right: 8, left: -16, bottom: 48 }}
+                          >
+                            <XAxis
+                              dataKey="nama"
+                              tick={{ fontSize: 10 }}
+                              angle={-35}
+                              textAnchor="end"
+                              interval={0}
+                            />
+                            <YAxis tick={{ fontSize: 10 }} />
+                            <Tooltip
+                              formatter={(value: number) => [
+                                value,
+                                "Skor Total",
+                              ]}
+                              contentStyle={{
+                                fontSize: 12,
+                                borderRadius: 8,
+                                border: "1px solid hsl(var(--border))",
+                                background: "hsl(var(--card))",
+                                color: "hsl(var(--foreground))",
+                              }}
+                            />
+                            <Bar dataKey="skor" radius={[4, 4, 0, 0]}>
+                              {barChartData.map((_, index) => (
+                                <Cell
+                                  key={`cell-${barChartData[index].nama}`}
+                                  fill={
+                                    CHART_COLORS[index % CHART_COLORS.length]
+                                  }
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Pie Chart - Status Penilaian */}
+                  <Card data-ocid="admin.status_chart.card">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">
+                        Status Penilaian
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingKR ? (
+                        <div
+                          className="space-y-2"
+                          data-ocid="admin.status_chart.loading_state"
+                        >
+                          <Skeleton className="h-4 w-1/2" />
+                          <Skeleton className="h-36 w-full rounded-full mx-auto" />
+                        </div>
+                      ) : totalKR === 0 ? (
+                        <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
+                          Belum ada KR terdaftar
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={220}>
+                          <PieChart>
+                            <Pie
+                              data={pieChartData}
+                              cx="50%"
+                              cy="45%"
+                              innerRadius={55}
+                              outerRadius={80}
+                              paddingAngle={3}
+                              dataKey="value"
+                              label={({ name, percent }) =>
+                                `${name} ${(percent * 100).toFixed(0)}%`
+                              }
+                              labelLine={false}
+                            >
+                              {pieChartData.map((_, index) => (
+                                <Cell
+                                  key={`pie-cell-${pieChartData[index].name}`}
+                                  fill={PIE_COLORS[index % PIE_COLORS.length]}
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              formatter={(value: number, name: string) => [
+                                `${value} KR`,
+                                name,
+                              ]}
+                              contentStyle={{
+                                fontSize: 12,
+                                borderRadius: 8,
+                                border: "1px solid hsl(var(--border))",
+                                background: "hsl(var(--card))",
+                                color: "hsl(var(--foreground))",
+                              }}
+                            />
+                            <Legend
+                              iconType="circle"
+                              iconSize={10}
+                              wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
                       )}
                     </CardContent>
                   </Card>
