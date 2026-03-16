@@ -1,0 +1,552 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Principal } from "@icp-sdk/core/principal";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import { Check, Edit, FileDown, Loader2, UserPlus, X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Variant_pending_approved } from "../backend";
+import type { KwartirRanting, Penilaian } from "../backend";
+import PenilaianForm from "../components/PenilaianForm";
+import { useActor } from "../hooks/useActor";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
+
+const SKELETON_KEYS = ["sk1", "sk2", "sk3", "sk4", "sk5"];
+
+const BULAN_ID = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+
+function formatTanggalID(date: Date): string {
+  return `${date.getDate()} ${BULAN_ID[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+export default function AdminPage() {
+  const { identity } = useInternetIdentity();
+  const { actor, isFetching } = useActor();
+  const queryClient = useQueryClient();
+  const isLoggedIn = !!identity;
+
+  const [penilaianDialog, setPenilaianDialog] = useState<{
+    open: boolean;
+    kr: KwartirRanting | null;
+    existing: Penilaian | null;
+  }>({ open: false, kr: null, existing: null });
+
+  const { data: isAdmin, isLoading: loadingAdmin } = useQuery({
+    queryKey: ["isAdmin", identity?.getPrincipal().toString()],
+    queryFn: async () => {
+      if (!actor || !isLoggedIn) return false;
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !isFetching && isLoggedIn,
+  });
+
+  const { data: allKR, isLoading: loadingKR } = useQuery({
+    queryKey: ["allKwartirRanting"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.allKwartirRanting();
+    },
+    enabled: !!actor && !isFetching && !!isAdmin,
+  });
+
+  const { data: allSorted } = useQuery({
+    queryKey: ["allSortedByScore"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllSortedByScore();
+    },
+    enabled: !!actor && !isFetching && !!isAdmin,
+  });
+
+  const { data: pendingList, isLoading: loadingPending } = useQuery({
+    queryKey: ["pendingAdminPembantu"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.pendingAdminPembantu();
+    },
+    enabled: !!actor && !isFetching && !!isAdmin,
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: async (principal: Principal) => {
+      if (!actor) throw new Error("Actor tidak tersedia");
+      await actor.approveAdminPembantu(principal);
+    },
+    onSuccess: () => {
+      toast.success("Admin pembantu disetujui!");
+      queryClient.invalidateQueries({ queryKey: ["pendingAdminPembantu"] });
+    },
+    onError: (e) => toast.error(`Gagal menyetujui: ${e}`),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async (principal: Principal) => {
+      if (!actor) throw new Error("Actor tidak tersedia");
+      await actor.removeAdminPembantu(principal);
+    },
+    onSuccess: () => {
+      toast.success("Admin pembantu dihapus!");
+      queryClient.invalidateQueries({ queryKey: ["pendingAdminPembantu"] });
+    },
+    onError: (e) => toast.error(`Gagal menghapus: ${e}`),
+  });
+
+  const getPenilaianForKR = (kr: KwartirRanting): Penilaian | null => {
+    const found = (allSorted || []).find(
+      ([k]) => k.owner.toString() === kr.owner.toString(),
+    );
+    return found ? found[1] : null;
+  };
+
+  const handleDownloadPDF = () => {
+    const sorted = allSorted || [];
+    const now = new Date();
+    const tanggal = formatTanggalID(now);
+
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    // Header
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(
+      "REKAP HASIL PENILAIAN KWARTIR RANTING TERGIAT KWARCAB SUBANG",
+      doc.internal.pageSize.getWidth() / 2,
+      18,
+      { align: "center" },
+    );
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      "Kwartir Cabang Subang",
+      doc.internal.pageSize.getWidth() / 2,
+      25,
+      { align: "center" },
+    );
+
+    doc.setFontSize(9);
+    doc.text(`Dicetak: ${tanggal}`, doc.internal.pageSize.getWidth() / 2, 31, {
+      align: "center",
+    });
+
+    // Table
+    const tableBody = sorted.map(([kr, p], idx) => [
+      idx + 1,
+      kr.namaKwartirRanting,
+      kr.namaKetua,
+      p ? String(p.skorProfil) : "-",
+      p ? String(p.skorPotensi) : "-",
+      p ? String(p.skorKegiatan) : "-",
+      p ? String(p.skorTotal) : "-",
+    ]);
+
+    autoTable(doc, {
+      startY: 36,
+      head: [
+        [
+          "No",
+          "Nama Kwartir Ranting",
+          "Nama Ketua",
+          "Skor Profil",
+          "Skor Potensi",
+          "Skor Kegiatan",
+          "Total Skor",
+        ],
+      ],
+      body: tableBody,
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: {
+        fillColor: [34, 85, 34],
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      alternateRowStyles: { fillColor: [240, 248, 240] },
+      columnStyles: {
+        0: { halign: "center", cellWidth: 12 },
+        3: { halign: "center" },
+        4: { halign: "center" },
+        5: { halign: "center" },
+        6: { halign: "center", fontStyle: "bold" },
+      },
+    });
+
+    // Footer
+    const finalY = (doc as any).lastAutoTable.finalY + 14;
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    doc.setFontSize(10);
+    doc.text(`Subang, ${tanggal}`, pageWidth - 60, finalY, { align: "center" });
+    doc.text("Ketua Kwarcab Subang", pageWidth - 60, finalY + 6, {
+      align: "center",
+    });
+    doc.text("( ________________________ )", pageWidth - 60, finalY + 32, {
+      align: "center",
+    });
+
+    doc.save(`Rekap-Penilaian-KR-Subang-${now.getFullYear()}.pdf`);
+    toast.success("PDF berhasil diunduh!");
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="container mx-auto px-4 py-20 text-center">
+        <p className="text-muted-foreground">Silakan masuk terlebih dahulu.</p>
+      </div>
+    );
+  }
+
+  if (loadingAdmin) {
+    return (
+      <div
+        className="container mx-auto px-4 py-10"
+        data-ocid="penilaian.loading_state"
+      >
+        <Skeleton className="h-8 w-48 mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="container mx-auto px-4 py-20 text-center">
+        <p className="text-muted-foreground">
+          Anda tidak memiliki akses ke halaman ini.
+        </p>
+      </div>
+    );
+  }
+
+  const pending = (pendingList || []).filter(
+    (a) => a.status === Variant_pending_approved.pending,
+  );
+  const approved = (pendingList || []).filter(
+    (a) => a.status === Variant_pending_approved.approved,
+  );
+
+  return (
+    <div className="container mx-auto px-4 py-10">
+      <div className="mb-6">
+        <h1 className="font-display text-3xl font-bold">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-1">
+          Kelola penilaian dan admin pembantu
+        </p>
+      </div>
+
+      <Tabs defaultValue="penilaian">
+        <TabsList className="mb-6">
+          <TabsTrigger value="penilaian" data-ocid="admin.penilaian.tab">
+            Daftar Penilaian
+          </TabsTrigger>
+          <TabsTrigger value="pembantu" data-ocid="admin.pembantu.tab">
+            Kelola Admin Pembantu
+            {pending.length > 0 && (
+              <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-xs">
+                {pending.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Tab 1: Daftar Penilaian */}
+        <TabsContent value="penilaian">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Daftar Kwartir Ranting</CardTitle>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleDownloadPDF}
+                disabled={loadingKR || (allSorted || []).length === 0}
+                data-ocid="admin.download_pdf.button"
+              >
+                <FileDown className="h-4 w-4 mr-2" />
+                Download Rekap PDF
+              </Button>
+            </CardHeader>
+            <CardContent className="p-0">
+              {loadingKR ? (
+                <div
+                  className="p-6 space-y-3"
+                  data-ocid="penilaian.loading_state"
+                >
+                  {SKELETON_KEYS.map((k) => (
+                    <Skeleton key={k} className="h-12" />
+                  ))}
+                </div>
+              ) : (allKR || []).length === 0 ? (
+                <div
+                  className="p-12 text-center"
+                  data-ocid="penilaian.empty_state"
+                >
+                  <UserPlus className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">
+                    Belum ada KR terdaftar
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>No</TableHead>
+                      <TableHead>Nama KR</TableHead>
+                      <TableHead>Nama Ketua</TableHead>
+                      <TableHead className="text-right">Skor Profil</TableHead>
+                      <TableHead className="text-right">Skor Potensi</TableHead>
+                      <TableHead className="text-right">
+                        Skor Kegiatan
+                      </TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(allKR || []).map((kr, idx) => {
+                      const p = getPenilaianForKR(kr);
+                      return (
+                        <TableRow key={kr.owner.toString()}>
+                          <TableCell>{idx + 1}</TableCell>
+                          <TableCell className="font-medium">
+                            {kr.namaKwartirRanting}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {kr.namaKetua}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {p ? p.skorProfil : "–"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {p ? p.skorPotensi : "–"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {p ? p.skorKegiatan : "–"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {p ? (
+                              <Badge>{p.skorTotal}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">
+                                –
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                setPenilaianDialog({
+                                  open: true,
+                                  kr,
+                                  existing: p,
+                                })
+                              }
+                              data-ocid={`penilaian.edit_button.${idx + 1}`}
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              {p ? "Edit" : "Nilai"}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab 2: Kelola Admin Pembantu */}
+        <TabsContent value="pembantu">
+          <div className="space-y-6">
+            {/* Pending */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  Menunggu Persetujuan
+                  {pending.length > 0 && (
+                    <Badge variant="destructive">{pending.length}</Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {loadingPending ? (
+                  <div className="p-4">
+                    <Skeleton className="h-12" />
+                  </div>
+                ) : pending.length === 0 ? (
+                  <div
+                    className="p-8 text-center"
+                    data-ocid="penilaian.empty_state"
+                  >
+                    <p className="text-muted-foreground text-sm">
+                      Tidak ada permintaan pending
+                    </p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Principal</TableHead>
+                        <TableHead>Nama KR</TableHead>
+                        <TableHead className="text-right">Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pending.map((ap, idx) => (
+                        <TableRow
+                          key={ap.principal.toString()}
+                          data-ocid={`admin.pembantu.row.${idx + 1}`}
+                        >
+                          <TableCell className="font-mono text-xs">
+                            {ap.principal.toString().slice(0, 20)}...
+                          </TableCell>
+                          <TableCell>{ap.namaKwartirRanting}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  approveMutation.mutate(
+                                    ap.principal as Principal,
+                                  )
+                                }
+                                disabled={approveMutation.isPending}
+                              >
+                                {approveMutation.isPending ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Check className="h-3 w-3" />
+                                )}
+                                Setujui
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() =>
+                                  removeMutation.mutate(
+                                    ap.principal as Principal,
+                                  )
+                                }
+                                disabled={removeMutation.isPending}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Approved */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  Admin Pembantu Aktif
+                  <Badge variant="secondary">{approved.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {approved.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <p className="text-muted-foreground text-sm">
+                      Belum ada admin pembantu aktif
+                    </p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Principal</TableHead>
+                        <TableHead>Nama KR</TableHead>
+                        <TableHead className="text-right">Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {approved.map((ap, idx) => (
+                        <TableRow
+                          key={ap.principal.toString()}
+                          data-ocid={`admin.pembantu.row.${idx + 1}`}
+                        >
+                          <TableCell className="font-mono text-xs">
+                            {ap.principal.toString().slice(0, 20)}...
+                          </TableCell>
+                          <TableCell>{ap.namaKwartirRanting}</TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() =>
+                                removeMutation.mutate(ap.principal as Principal)
+                              }
+                              disabled={removeMutation.isPending}
+                              data-ocid={`admin.pembantu.delete_button.${idx + 1}`}
+                            >
+                              {removeMutation.isPending ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <X className="h-3 w-3" />
+                              )}
+                              Hapus
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Penilaian Dialog */}
+      {penilaianDialog.kr && (
+        <PenilaianForm
+          open={penilaianDialog.open}
+          onOpenChange={(open) =>
+            setPenilaianDialog((prev) => ({ ...prev, open }))
+          }
+          kwartirRanting={penilaianDialog.kr}
+          existingPenilaian={penilaianDialog.existing}
+        />
+      )}
+    </div>
+  );
+}
