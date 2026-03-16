@@ -412,56 +412,55 @@ export default function AdminPage() {
                                 data-ocid={`penilaian.edit_button.${idx + 1}`}
                               >
                                 <Edit className="h-3 w-3 mr-1" />
-                                {p ? "Edit" : "Nilai"}
+                                Edit
                               </Button>
-                              {p && (
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      data-ocid={`penilaian.delete_button.${idx + 1}`}
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    disabled={!p}
+                                    data-ocid={`penilaian.delete_button.${idx + 1}`}
+                                  >
+                                    <Trash2 className="h-3 w-3 mr-1" />
+                                    Hapus
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent data-ocid="penilaian.dialog">
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Hapus Penilaian?
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Data penilaian untuk{" "}
+                                      <strong>{kr.namaKwartirRanting}</strong>{" "}
+                                      akan dihapus permanen. Tindakan ini tidak
+                                      dapat dibatalkan.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel data-ocid="penilaian.cancel_button">
+                                      Batal
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() =>
+                                        deletePenilaianMutation.mutate(
+                                          kr.owner as Principal,
+                                        )
+                                      }
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      data-ocid="penilaian.confirm_button"
                                     >
-                                      <Trash2 className="h-3 w-3 mr-1" />
-                                      Hapus
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent data-ocid="penilaian.dialog">
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>
-                                        Hapus Penilaian?
-                                      </AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Data penilaian untuk{" "}
-                                        <strong>{kr.namaKwartirRanting}</strong>{" "}
-                                        akan dihapus permanen. Tindakan ini
-                                        tidak dapat dibatalkan.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel data-ocid="penilaian.cancel_button">
-                                        Batal
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() =>
-                                          deletePenilaianMutation.mutate(
-                                            kr.owner as Principal,
-                                          )
-                                        }
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                        data-ocid="penilaian.confirm_button"
-                                      >
-                                        {deletePenilaianMutation.isPending ? (
-                                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                        ) : (
-                                          <Trash2 className="h-3 w-3 mr-1" />
-                                        )}
-                                        Hapus Permanen
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              )}
+                                      {deletePenilaianMutation.isPending ? (
+                                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                      ) : (
+                                        <Trash2 className="h-3 w-3 mr-1" />
+                                      )}
+                                      Hapus Permanen
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </TableCell>
                         </TableRow>
