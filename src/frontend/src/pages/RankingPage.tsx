@@ -1,4 +1,16 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -9,15 +21,39 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
+import type { Principal } from "@icp-sdk/core/principal";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Trophy } from "lucide-react";
+import { Edit, Loader2, Trash2, Trophy } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type { KwartirRanting, Penilaian } from "../backend";
+import PenilaianForm from "../components/PenilaianForm";
 import { useActor } from "../hooks/useActor";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
 const SKELETON_KEYS = ["sk1", "sk2", "sk3", "sk4", "sk5", "sk6", "sk7", "sk8"];
 
 export default function RankingPage() {
   const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+  const queryClient = useQueryClient();
+  const isLoggedIn = !!identity;
+
+  const [penilaianDialog, setPenilaianDialog] = useState<{
+    open: boolean;
+    kr: KwartirRanting | null;
+    existing: Penilaian | null;
+  }>({ open: false, kr: null, existing: null });
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ["isAdmin", identity?.getPrincipal().toString()],
+    queryFn: async () => {
+      if (!actor || !isLoggedIn) return false;
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !isFetching && isLoggedIn,
+  });
 
   const { data: rankings, isLoading } = useQuery({
     queryKey: ["allSortedByScore"],
@@ -26,6 +62,18 @@ export default function RankingPage() {
       return actor.getAllSortedByScore();
     },
     enabled: !!actor && !isFetching,
+  });
+
+  const deletePenilaianMutation = useMutation({
+    mutationFn: async (owner: Principal) => {
+      if (!actor) throw new Error("Actor tidak tersedia");
+      await actor.deletePenilaian(owner);
+    },
+    onSuccess: () => {
+      toast.success("Penilaian berhasil dihapus!");
+      queryClient.invalidateQueries({ queryKey: ["allSortedByScore"] });
+    },
+    onError: (e) => toast.error(`Gagal menghapus penilaian: ${e}`),
   });
 
   return (
@@ -70,13 +118,16 @@ export default function RankingPage() {
                   <TableHead className="text-right">Skor Potensi</TableHead>
                   <TableHead className="text-right">Skor Kegiatan</TableHead>
                   <TableHead className="text-right">Total Skor</TableHead>
+                  {isAdmin && (
+                    <TableHead className="text-right">Aksi</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {(rankings || []).map(([kr, penilaian], idx) => (
                   <TableRow
                     key={kr.owner.toString()}
-                    className="cursor-pointer hover:bg-accent/50 transition-colors"
+                    className="hover:bg-accent/50 transition-colors"
                     data-ocid={`ranking.row.${idx + 1}`}
                   >
                     <TableCell className="font-medium">
@@ -126,6 +177,74 @@ export default function RankingPage() {
                         </span>
                       )}
                     </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              setPenilaianDialog({
+                                open: true,
+                                kr,
+                                existing: penilaian ?? null,
+                              })
+                            }
+                            data-ocid={`ranking.edit_button.${idx + 1}`}
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                disabled={!penilaian}
+                                data-ocid={`ranking.delete_button.${idx + 1}`}
+                              >
+                                <Trash2 className="h-3 w-3 mr-1" />
+                                Hapus
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent data-ocid="ranking.dialog">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Hapus Penilaian?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Data penilaian untuk{" "}
+                                  <strong>{kr.namaKwartirRanting}</strong> akan
+                                  dihapus permanen. Tindakan ini tidak dapat
+                                  dibatalkan.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel data-ocid="ranking.cancel_button">
+                                  Batal
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    deletePenilaianMutation.mutate(
+                                      kr.owner as Principal,
+                                    )
+                                  }
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  data-ocid="ranking.confirm_button"
+                                >
+                                  {deletePenilaianMutation.isPending ? (
+                                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                  ) : (
+                                    <Trash2 className="h-3 w-3 mr-1" />
+                                  )}
+                                  Hapus Permanen
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -133,6 +252,18 @@ export default function RankingPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Penilaian Dialog */}
+      {penilaianDialog.kr && (
+        <PenilaianForm
+          open={penilaianDialog.open}
+          onOpenChange={(open) =>
+            setPenilaianDialog((prev) => ({ ...prev, open }))
+          }
+          kwartirRanting={penilaianDialog.kr}
+          existingPenilaian={penilaianDialog.existing}
+        />
+      )}
     </div>
   );
 }
