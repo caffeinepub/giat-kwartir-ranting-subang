@@ -289,7 +289,7 @@ export default function AdminPage() {
     );
   }
 
-  if (loadingAdmin) {
+  if (isFetching || !actor || loadingAdmin) {
     return (
       <div
         className="container mx-auto px-4 py-10"
