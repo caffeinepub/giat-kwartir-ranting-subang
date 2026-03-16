@@ -907,7 +907,6 @@ export default function AdminPage() {
                                         <Button
                                           size="sm"
                                           variant="destructive"
-                                          disabled={!p}
                                           data-ocid={`penilaian.delete_button.${idx + 1}`}
                                         >
                                           <Trash2 className="h-3 w-3 mr-1" />
