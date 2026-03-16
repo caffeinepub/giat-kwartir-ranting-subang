@@ -220,6 +220,13 @@ actor {
     penilaianMap.add(input.kwartirRantingOwner, penilaian);
   };
 
+  public shared ({ caller }) func deletePenilaian(owner : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only main admin can delete penilaian data");
+    };
+    ignore penilaianMap.remove(owner);
+  };
+
   public query ({ caller }) func getPenilaianForOwner(owner : Principal) : async ?Penilaian {
     penilaianMap.get(owner);
   };

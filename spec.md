@@ -1,22 +1,20 @@
 # Giat Kwartir Ranting Subang
 
 ## Current State
-AdminPage shows a table of Kwartir Ranting with their scores (Profil, Potensi, Kegiatan, Total). Data comes from `getAllSortedByScore()` backend query.
+AdminPage has a Daftar Penilaian tab with an Edit button per row. There is no delete functionality for penilaian. The backend does not have a deletePenilaian function.
 
 ## Requested Changes (Diff)
 
 ### Add
-- A "Download PDF Rekap" button on the AdminPage Daftar Penilaian tab.
-- PDF generation using `jspdf` + `jspdf-autotable` (no new backend needed).
-- PDF content: title "REKAP HASIL PENILAIAN KWARTIR RANTING TERGIAT KWARCAB SUBANG", generated date, table with columns: No, Nama KR, Nama Ketua, Skor Profil, Skor Potensi, Skor Kegiatan, Total Skor. Rows sorted by rank (as shown on screen).
+- Backend: `deletePenilaian(owner: Principal): Promise<void>` — admin-only function to delete a penilaian record
+- AdminPage: Delete button (with confirmation AlertDialog) next to each Edit button in the Daftar Penilaian table
 
 ### Modify
-- AdminPage.tsx: add download button in CardHeader of Daftar Penilaian tab.
+- AdminPage: Add delete mutation using the new `deletePenilaian` backend function
 
 ### Remove
-- Nothing removed.
+- Nothing removed
 
 ## Implementation Plan
-1. Install `jspdf` and `jspdf-autotable` npm packages.
-2. In AdminPage.tsx, add a `downloadPDF` function that builds PDF with title, date, and ranking table.
-3. Add Download button (with FileDown icon) next to CardTitle in Daftar Penilaian tab. Button is disabled if no data.
+1. Regenerate Motoko backend to add `deletePenilaian` admin function
+2. Update AdminPage.tsx to add delete button + AlertDialog confirmation per penilaian row

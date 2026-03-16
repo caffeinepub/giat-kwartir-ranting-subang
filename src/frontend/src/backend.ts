@@ -236,6 +236,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createOrUpdateKwartirRanting(input: CreateOrUpdateKwartirRantingInput): Promise<void>;
     createOrUpdatePenilaian(input: CreateOrUpdatePenilaianInput): Promise<void>;
+    deletePenilaian(owner: Principal): Promise<void>;
     getAllSortedByScore(): Promise<Array<T>>;
     getCallerUserRole(): Promise<UserRole>;
     getKwartirRantingByOwner(owner: Principal): Promise<KwartirRanting | null>;
@@ -346,6 +347,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.createOrUpdatePenilaian(arg0);
+            return result;
+        }
+    }
+    async deletePenilaian(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deletePenilaian(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deletePenilaian(arg0);
             return result;
         }
     }

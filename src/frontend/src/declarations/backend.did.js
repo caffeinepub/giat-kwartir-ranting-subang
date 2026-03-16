@@ -156,6 +156,7 @@ export const idlService = IDL.Service({
       [],
     ),
   'createOrUpdatePenilaian' : IDL.Func([CreateOrUpdatePenilaianInput], [], []),
+  'deletePenilaian' : IDL.Func([IDL.Principal], [], []),
   'getAllSortedByScore' : IDL.Func([], [IDL.Vec(T)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getKwartirRantingByOwner' : IDL.Func(
@@ -332,6 +333,7 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'deletePenilaian' : IDL.Func([IDL.Principal], [], []),
     'getAllSortedByScore' : IDL.Func([], [IDL.Vec(T)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getKwartirRantingByOwner' : IDL.Func(

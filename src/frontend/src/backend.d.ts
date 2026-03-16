@@ -153,6 +153,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createOrUpdateKwartirRanting(input: CreateOrUpdateKwartirRantingInput): Promise<void>;
     createOrUpdatePenilaian(input: CreateOrUpdatePenilaianInput): Promise<void>;
+    deletePenilaian(owner: Principal): Promise<void>;
     getAllSortedByScore(): Promise<Array<T>>;
     getCallerUserRole(): Promise<UserRole>;
     getKwartirRantingByOwner(owner: Principal): Promise<KwartirRanting | null>;

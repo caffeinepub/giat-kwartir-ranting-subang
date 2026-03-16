@@ -1,3 +1,14 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +24,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Principal } from "@icp-sdk/core/principal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import { Check, Edit, FileDown, Loader2, UserPlus, X } from "lucide-react";
+import {
+  Check,
+  Edit,
+  FileDown,
+  Loader2,
+  Trash2,
+  UserPlus,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Variant_pending_approved } from "../backend";
@@ -117,6 +134,19 @@ export default function AdminPage() {
     onError: (e) => toast.error(`Gagal menghapus: ${e}`),
   });
 
+  const deletePenilaianMutation = useMutation({
+    mutationFn: async (owner: Principal) => {
+      if (!actor) throw new Error("Actor tidak tersedia");
+      await actor.deletePenilaian(owner);
+    },
+    onSuccess: () => {
+      toast.success("Penilaian berhasil dihapus!");
+      queryClient.invalidateQueries({ queryKey: ["allSortedByScore"] });
+      queryClient.invalidateQueries({ queryKey: ["allKwartirRanting"] });
+    },
+    onError: (e) => toast.error(`Gagal menghapus penilaian: ${e}`),
+  });
+
   const getPenilaianForKR = (kr: KwartirRanting): Penilaian | null => {
     const found = (allSorted || []).find(
       ([k]) => k.owner.toString() === kr.owner.toString(),
@@ -128,6 +158,13 @@ export default function AdminPage() {
     const sorted = allSorted || [];
     const now = new Date();
     const tanggal = formatTanggalID(now);
+
+    const w = window as any;
+    if (!w.jspdf) {
+      toast.error("Library PDF belum siap, coba lagi sebentar.");
+      return;
+    }
+    const { jsPDF } = w.jspdf;
 
     const doc = new jsPDF({
       orientation: "landscape",
@@ -170,7 +207,7 @@ export default function AdminPage() {
       p ? String(p.skorTotal) : "-",
     ]);
 
-    autoTable(doc, {
+    doc.autoTable({
       startY: 36,
       head: [
         [
@@ -201,7 +238,7 @@ export default function AdminPage() {
     });
 
     // Footer
-    const finalY = (doc as any).lastAutoTable.finalY + 14;
+    const finalY = doc.lastAutoTable.finalY + 14;
     const pageWidth = doc.internal.pageSize.getWidth();
 
     doc.setFontSize(10);
@@ -361,21 +398,71 @@ export default function AdminPage() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                setPenilaianDialog({
-                                  open: true,
-                                  kr,
-                                  existing: p,
-                                })
-                              }
-                              data-ocid={`penilaian.edit_button.${idx + 1}`}
-                            >
-                              <Edit className="h-3 w-3 mr-1" />
-                              {p ? "Edit" : "Nilai"}
-                            </Button>
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() =>
+                                  setPenilaianDialog({
+                                    open: true,
+                                    kr,
+                                    existing: p,
+                                  })
+                                }
+                                data-ocid={`penilaian.edit_button.${idx + 1}`}
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                {p ? "Edit" : "Nilai"}
+                              </Button>
+                              {p && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      data-ocid={`penilaian.delete_button.${idx + 1}`}
+                                    >
+                                      <Trash2 className="h-3 w-3 mr-1" />
+                                      Hapus
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent data-ocid="penilaian.dialog">
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Hapus Penilaian?
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Data penilaian untuk{" "}
+                                        <strong>{kr.namaKwartirRanting}</strong>{" "}
+                                        akan dihapus permanen. Tindakan ini
+                                        tidak dapat dibatalkan.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel data-ocid="penilaian.cancel_button">
+                                        Batal
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() =>
+                                          deletePenilaianMutation.mutate(
+                                            kr.owner as Principal,
+                                          )
+                                        }
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        data-ocid="penilaian.confirm_button"
+                                      >
+                                        {deletePenilaianMutation.isPending ? (
+                                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                        ) : (
+                                          <Trash2 className="h-3 w-3 mr-1" />
+                                        )}
+                                        Hapus Permanen
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       );

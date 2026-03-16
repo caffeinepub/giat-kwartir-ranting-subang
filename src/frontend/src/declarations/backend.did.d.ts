@@ -158,6 +158,7 @@ export interface _SERVICE {
     [CreateOrUpdatePenilaianInput],
     undefined
   >,
+  'deletePenilaian' : ActorMethod<[Principal], undefined>,
   'getAllSortedByScore' : ActorMethod<[], Array<T>>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getKwartirRantingByOwner' : ActorMethod<[Principal], [] | [KwartirRanting]>,
