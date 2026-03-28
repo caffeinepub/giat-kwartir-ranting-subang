@@ -194,7 +194,7 @@ export default function AdminPage() {
     return found ? found[1] : null;
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     const sorted = allSorted || [];
     const now = new Date();
     const tanggal = formatTanggalID(now);
@@ -212,26 +212,63 @@ export default function AdminPage() {
       format: "a4",
     });
 
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Try to embed Pramuka logo
+    let logoLoaded = false;
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      await new Promise<void>((resolve) => {
+        img.onload = () => {
+          logoLoaded = true;
+          resolve();
+        };
+        img.onerror = () => resolve();
+        img.src = "/assets/generated/pramuka-logo-transparent.dim_200x200.png";
+      });
+      if (logoLoaded) {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL("image/png");
+        // Center logo at top
+        const logoW = 20;
+        const logoH = 20;
+        doc.addImage(
+          dataUrl,
+          "PNG",
+          pageWidth / 2 - logoW / 2,
+          4,
+          logoW,
+          logoH,
+        );
+      }
+    } catch (_) {
+      /* skip logo if error */
+    }
+
+    const headerTop = logoLoaded ? 28 : 18;
+
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.text(
       "REKAP HASIL PENILAIAN KWARTIR RANTING TERGIAT KWARCAB SUBANG",
-      doc.internal.pageSize.getWidth() / 2,
-      18,
+      pageWidth / 2,
+      headerTop,
       { align: "center" },
     );
 
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
-    doc.text(
-      "Kwartir Cabang Subang",
-      doc.internal.pageSize.getWidth() / 2,
-      25,
-      { align: "center" },
-    );
+    doc.text("Kwartir Cabang Subang", pageWidth / 2, headerTop + 7, {
+      align: "center",
+    });
 
     doc.setFontSize(9);
-    doc.text(`Dicetak: ${tanggal}`, doc.internal.pageSize.getWidth() / 2, 31, {
+    doc.text(`Dicetak: ${tanggal}`, pageWidth / 2, headerTop + 13, {
       align: "center",
     });
 
@@ -246,7 +283,7 @@ export default function AdminPage() {
     ]);
 
     doc.autoTable({
-      startY: 36,
+      startY: headerTop + 18,
       head: [
         [
           "No",
@@ -276,7 +313,6 @@ export default function AdminPage() {
     });
 
     const finalY = doc.lastAutoTable.finalY + 14;
-    const pageWidth = doc.internal.pageSize.getWidth();
 
     doc.setFontSize(10);
     doc.text(`Subang, ${tanggal}`, pageWidth - 60, finalY, { align: "center" });
