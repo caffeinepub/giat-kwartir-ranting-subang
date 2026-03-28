@@ -109,9 +109,17 @@ export default function AdminPage() {
     queryKey: ["isAdmin", identity?.getPrincipal().toString()],
     queryFn: async () => {
       if (!actor || !isLoggedIn) return false;
-      return actor.isCallerAdmin();
+      try {
+        const adminResult = await actor.isCallerAdmin();
+        const pembantuResult = await actor.isCallerAdminPembantu();
+        return adminResult || pembantuResult;
+      } catch {
+        return false;
+      }
     },
-    enabled: !!actor && !isFetching && isLoggedIn,
+    enabled: !!actor && !isFetching && !!isLoggedIn,
+    retry: false,
+    staleTime: 0,
   });
 
   const { data: allKR, isLoading: loadingKR } = useQuery({
@@ -335,12 +343,7 @@ export default function AdminPage() {
     );
   }
 
-  if (
-    isFetching ||
-    !actor ||
-    loadingAdmin ||
-    (isAdmin === undefined && isLoggedIn)
-  ) {
+  if (isFetching || !actor || loadingAdmin) {
     return (
       <div
         className="container mx-auto px-4 py-10"
@@ -352,7 +355,7 @@ export default function AdminPage() {
     );
   }
 
-  if (isAdmin === false) {
+  if (!isAdmin) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <p className="text-muted-foreground">
