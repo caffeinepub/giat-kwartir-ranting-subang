@@ -10,6 +10,11 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AddLampiranInput {
+  'blob' : [] | [ExternalBlob],
+  'namaFile' : string,
+  'kategoriKegiatan' : string,
+}
 export interface AdminPembantu {
   'status' : { 'pending' : null } |
     { 'approved' : null },
@@ -22,6 +27,7 @@ export interface CreateOrUpdateKwartirRantingInput {
   'jambore' : bigint,
   'raimuna' : bigint,
   'ikutLombaTingkatIII' : bigint,
+  'dewanKerjaRantingRapat' : bigint,
   'siagaPutera' : bigint,
   'siagaPuteri' : bigint,
   'perkemahanBaktiSatuanKarya' : bigint,
@@ -29,14 +35,17 @@ export interface CreateOrUpdateKwartirRantingInput {
   'satuanKaryaAktif' : bigint,
   'bazarSiaga' : bigint,
   'masaBakti' : string,
+  'dewanKerjaRantingPeserta' : bigint,
   'mengirimkanUtusanDewanKerja' : bigint,
   'partisipasiKaryaBaktiLebaranC3' : bigint,
   'partisipasiKaryaBaktiLebaranC4' : bigint,
   'namaKetua' : string,
+  'pusdiklatKegiatan' : bigint,
   'rekruitmenPenegakGaruda' : bigint,
   'penegakPutera' : bigint,
   'penegakPuteri' : bigint,
   'nomorSk' : string,
+  'satuanKaryaKegiatan' : bigint,
   'partisipasiPenangananBencanaC3' : bigint,
   'partisipasiPenangananBencanaC4' : bigint,
   'memilkiBumiPerkemahan' : boolean,
@@ -51,6 +60,7 @@ export interface CreateOrUpdateKwartirRantingInput {
   'mengirimkanUtusanLpkdk' : bigint,
   'pandegaPutera' : bigint,
   'pandegaPuteri' : bigint,
+  'pusdiklatPeserta' : bigint,
   'pembina' : bigint,
   'dianpinsat' : bigint,
   'pestaSiaga' : bigint,
@@ -61,27 +71,34 @@ export interface CreateOrUpdateKwartirRantingInput {
   'mengirimkanUtusanKpl' : bigint,
   'mengirimkanUtusanLpk' : bigint,
   'mengirimkanUtusanKpdDewasa' : bigint,
+  'dewanKerjaRantingKegiatan' : bigint,
   'partisipasiKaryaBaktiNatalC3' : bigint,
   'partisipasiKaryaBaktiNatalC4' : bigint,
   'orientasiMajelisPembimbing' : bigint,
   'memilikiSekretariat' : boolean,
   'penggalangPutera' : bigint,
   'penggalangPuteri' : bigint,
+  'satuanKaryaPerkemahan' : bigint,
 }
 export interface CreateOrUpdatePenilaianInput {
+  'skorSatuanKarya' : number,
+  'skorDewanKerja' : number,
   'skorPotensi' : number,
   'skorKegiatan' : number,
+  'skorPusdiklat' : number,
   'skorProfil' : number,
   'kwartirRantingOwner' : Principal,
   'skorTotal' : number,
   'namaKegiatan' : string,
 }
+export type ExternalBlob = Uint8Array;
 export interface KwartirRanting {
   'kmd' : bigint,
   'kml' : bigint,
   'jambore' : bigint,
   'raimuna' : bigint,
   'ikutLombaTingkatIII' : bigint,
+  'dewanKerjaRantingRapat' : bigint,
   'siagaPutera' : bigint,
   'siagaPuteri' : bigint,
   'perkemahanBaktiSatuanKarya' : bigint,
@@ -89,15 +106,18 @@ export interface KwartirRanting {
   'satuanKaryaAktif' : bigint,
   'bazarSiaga' : bigint,
   'masaBakti' : string,
+  'dewanKerjaRantingPeserta' : bigint,
   'owner' : Principal,
   'mengirimkanUtusanDewanKerja' : bigint,
   'partisipasiKaryaBaktiLebaranC3' : bigint,
   'partisipasiKaryaBaktiLebaranC4' : bigint,
   'namaKetua' : string,
+  'pusdiklatKegiatan' : bigint,
   'rekruitmenPenegakGaruda' : bigint,
   'penegakPutera' : bigint,
   'penegakPuteri' : bigint,
   'nomorSk' : string,
+  'satuanKaryaKegiatan' : bigint,
   'partisipasiPenangananBencanaC3' : bigint,
   'partisipasiPenangananBencanaC4' : bigint,
   'memilkiBumiPerkemahan' : boolean,
@@ -113,6 +133,7 @@ export interface KwartirRanting {
   'mengirimkanUtusanLpkdk' : bigint,
   'pandegaPutera' : bigint,
   'pandegaPuteri' : bigint,
+  'pusdiklatPeserta' : bigint,
   'pembina' : bigint,
   'dianpinsat' : bigint,
   'pestaSiaga' : bigint,
@@ -123,18 +144,32 @@ export interface KwartirRanting {
   'mengirimkanUtusanKpl' : bigint,
   'mengirimkanUtusanLpk' : bigint,
   'mengirimkanUtusanKpdDewasa' : bigint,
+  'dewanKerjaRantingKegiatan' : bigint,
   'partisipasiKaryaBaktiNatalC3' : bigint,
   'partisipasiKaryaBaktiNatalC4' : bigint,
   'orientasiMajelisPembimbing' : bigint,
   'memilikiSekretariat' : boolean,
   'penggalangPutera' : bigint,
   'penggalangPuteri' : bigint,
+  'satuanKaryaPerkemahan' : bigint,
+}
+export interface Lampiran {
+  'id' : string,
+  'owner' : Principal,
+  'blob' : [] | [ExternalBlob],
+  'namaFile' : string,
+  'uploadedAt' : bigint,
+  'uploadedBy' : Principal,
+  'kategoriKegiatan' : string,
 }
 export interface Penilaian {
   'assessedAt' : bigint,
   'assessedBy' : Principal,
+  'skorSatuanKarya' : number,
+  'skorDewanKerja' : number,
   'skorPotensi' : number,
   'skorKegiatan' : number,
+  'skorPusdiklat' : number,
   'skorProfil' : number,
   'kwartirRantingOwner' : Principal,
   'skorTotal' : number,
@@ -144,9 +179,36 @@ export type T = [KwartirRanting, [] | [Penilaian]];
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
+    undefined
+  >,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addAdminPembantu' : ActorMethod<[string], undefined>,
+  'addLampiran' : ActorMethod<[AddLampiranInput], string>,
   'allKwartirRanting' : ActorMethod<[], Array<KwartirRanting>>,
   'approveAdminPembantu' : ActorMethod<[Principal], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -158,11 +220,15 @@ export interface _SERVICE {
     [CreateOrUpdatePenilaianInput],
     undefined
   >,
+  'deleteLampiran' : ActorMethod<[string], undefined>,
   'deletePenilaian' : ActorMethod<[Principal], undefined>,
+  'getAllLampiran' : ActorMethod<[], Array<Lampiran>>,
   'getAllSortedByScore' : ActorMethod<[], Array<T>>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getKwartirRantingByOwner' : ActorMethod<[Principal], [] | [KwartirRanting]>,
+  'getLampiranByOwner' : ActorMethod<[Principal], Array<Lampiran>>,
   'getMyKwartirRanting' : ActorMethod<[], [] | [KwartirRanting]>,
+  'getMyLampiran' : ActorMethod<[], Array<Lampiran>>,
   'getPenilaianForOwner' : ActorMethod<[Principal], [] | [Penilaian]>,
   'isAdminPembantuCheck' : ActorMethod<[], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,

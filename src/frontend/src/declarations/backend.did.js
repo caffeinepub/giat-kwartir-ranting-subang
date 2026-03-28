@@ -8,12 +8,30 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const AddLampiranInput = IDL.Record({
+  'blob' : IDL.Opt(ExternalBlob),
+  'namaFile' : IDL.Text,
+  'kategoriKegiatan' : IDL.Text,
+});
 export const KwartirRanting = IDL.Record({
   'kmd' : IDL.Nat,
   'kml' : IDL.Nat,
   'jambore' : IDL.Nat,
   'raimuna' : IDL.Nat,
   'ikutLombaTingkatIII' : IDL.Nat,
+  'dewanKerjaRantingRapat' : IDL.Nat,
   'siagaPutera' : IDL.Nat,
   'siagaPuteri' : IDL.Nat,
   'perkemahanBaktiSatuanKarya' : IDL.Nat,
@@ -21,15 +39,18 @@ export const KwartirRanting = IDL.Record({
   'satuanKaryaAktif' : IDL.Nat,
   'bazarSiaga' : IDL.Nat,
   'masaBakti' : IDL.Text,
+  'dewanKerjaRantingPeserta' : IDL.Nat,
   'owner' : IDL.Principal,
   'mengirimkanUtusanDewanKerja' : IDL.Nat,
   'partisipasiKaryaBaktiLebaranC3' : IDL.Nat,
   'partisipasiKaryaBaktiLebaranC4' : IDL.Nat,
   'namaKetua' : IDL.Text,
+  'pusdiklatKegiatan' : IDL.Nat,
   'rekruitmenPenegakGaruda' : IDL.Nat,
   'penegakPutera' : IDL.Nat,
   'penegakPuteri' : IDL.Nat,
   'nomorSk' : IDL.Text,
+  'satuanKaryaKegiatan' : IDL.Nat,
   'partisipasiPenangananBencanaC3' : IDL.Nat,
   'partisipasiPenangananBencanaC4' : IDL.Nat,
   'memilkiBumiPerkemahan' : IDL.Bool,
@@ -45,6 +66,7 @@ export const KwartirRanting = IDL.Record({
   'mengirimkanUtusanLpkdk' : IDL.Nat,
   'pandegaPutera' : IDL.Nat,
   'pandegaPuteri' : IDL.Nat,
+  'pusdiklatPeserta' : IDL.Nat,
   'pembina' : IDL.Nat,
   'dianpinsat' : IDL.Nat,
   'pestaSiaga' : IDL.Nat,
@@ -55,12 +77,14 @@ export const KwartirRanting = IDL.Record({
   'mengirimkanUtusanKpl' : IDL.Nat,
   'mengirimkanUtusanLpk' : IDL.Nat,
   'mengirimkanUtusanKpdDewasa' : IDL.Nat,
+  'dewanKerjaRantingKegiatan' : IDL.Nat,
   'partisipasiKaryaBaktiNatalC3' : IDL.Nat,
   'partisipasiKaryaBaktiNatalC4' : IDL.Nat,
   'orientasiMajelisPembimbing' : IDL.Nat,
   'memilikiSekretariat' : IDL.Bool,
   'penggalangPutera' : IDL.Nat,
   'penggalangPuteri' : IDL.Nat,
+  'satuanKaryaPerkemahan' : IDL.Nat,
 });
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
@@ -73,6 +97,7 @@ export const CreateOrUpdateKwartirRantingInput = IDL.Record({
   'jambore' : IDL.Nat,
   'raimuna' : IDL.Nat,
   'ikutLombaTingkatIII' : IDL.Nat,
+  'dewanKerjaRantingRapat' : IDL.Nat,
   'siagaPutera' : IDL.Nat,
   'siagaPuteri' : IDL.Nat,
   'perkemahanBaktiSatuanKarya' : IDL.Nat,
@@ -80,14 +105,17 @@ export const CreateOrUpdateKwartirRantingInput = IDL.Record({
   'satuanKaryaAktif' : IDL.Nat,
   'bazarSiaga' : IDL.Nat,
   'masaBakti' : IDL.Text,
+  'dewanKerjaRantingPeserta' : IDL.Nat,
   'mengirimkanUtusanDewanKerja' : IDL.Nat,
   'partisipasiKaryaBaktiLebaranC3' : IDL.Nat,
   'partisipasiKaryaBaktiLebaranC4' : IDL.Nat,
   'namaKetua' : IDL.Text,
+  'pusdiklatKegiatan' : IDL.Nat,
   'rekruitmenPenegakGaruda' : IDL.Nat,
   'penegakPutera' : IDL.Nat,
   'penegakPuteri' : IDL.Nat,
   'nomorSk' : IDL.Text,
+  'satuanKaryaKegiatan' : IDL.Nat,
   'partisipasiPenangananBencanaC3' : IDL.Nat,
   'partisipasiPenangananBencanaC4' : IDL.Nat,
   'memilkiBumiPerkemahan' : IDL.Bool,
@@ -102,6 +130,7 @@ export const CreateOrUpdateKwartirRantingInput = IDL.Record({
   'mengirimkanUtusanLpkdk' : IDL.Nat,
   'pandegaPutera' : IDL.Nat,
   'pandegaPuteri' : IDL.Nat,
+  'pusdiklatPeserta' : IDL.Nat,
   'pembina' : IDL.Nat,
   'dianpinsat' : IDL.Nat,
   'pestaSiaga' : IDL.Nat,
@@ -112,26 +141,43 @@ export const CreateOrUpdateKwartirRantingInput = IDL.Record({
   'mengirimkanUtusanKpl' : IDL.Nat,
   'mengirimkanUtusanLpk' : IDL.Nat,
   'mengirimkanUtusanKpdDewasa' : IDL.Nat,
+  'dewanKerjaRantingKegiatan' : IDL.Nat,
   'partisipasiKaryaBaktiNatalC3' : IDL.Nat,
   'partisipasiKaryaBaktiNatalC4' : IDL.Nat,
   'orientasiMajelisPembimbing' : IDL.Nat,
   'memilikiSekretariat' : IDL.Bool,
   'penggalangPutera' : IDL.Nat,
   'penggalangPuteri' : IDL.Nat,
+  'satuanKaryaPerkemahan' : IDL.Nat,
 });
 export const CreateOrUpdatePenilaianInput = IDL.Record({
+  'skorSatuanKarya' : IDL.Float64,
+  'skorDewanKerja' : IDL.Float64,
   'skorPotensi' : IDL.Float64,
   'skorKegiatan' : IDL.Float64,
+  'skorPusdiklat' : IDL.Float64,
   'skorProfil' : IDL.Float64,
   'kwartirRantingOwner' : IDL.Principal,
   'skorTotal' : IDL.Float64,
   'namaKegiatan' : IDL.Text,
 });
+export const Lampiran = IDL.Record({
+  'id' : IDL.Text,
+  'owner' : IDL.Principal,
+  'blob' : IDL.Opt(ExternalBlob),
+  'namaFile' : IDL.Text,
+  'uploadedAt' : IDL.Int,
+  'uploadedBy' : IDL.Principal,
+  'kategoriKegiatan' : IDL.Text,
+});
 export const Penilaian = IDL.Record({
   'assessedAt' : IDL.Int,
   'assessedBy' : IDL.Principal,
+  'skorSatuanKarya' : IDL.Float64,
+  'skorDewanKerja' : IDL.Float64,
   'skorPotensi' : IDL.Float64,
   'skorKegiatan' : IDL.Float64,
+  'skorPusdiklat' : IDL.Float64,
   'skorProfil' : IDL.Float64,
   'kwartirRantingOwner' : IDL.Principal,
   'skorTotal' : IDL.Float64,
@@ -145,8 +191,35 @@ export const AdminPembantu = IDL.Record({
 });
 
 export const idlService = IDL.Service({
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      [],
+      [],
+    ),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addAdminPembantu' : IDL.Func([IDL.Text], [], []),
+  'addLampiran' : IDL.Func([AddLampiranInput], [IDL.Text], []),
   'allKwartirRanting' : IDL.Func([], [IDL.Vec(KwartirRanting)], ['query']),
   'approveAdminPembantu' : IDL.Func([IDL.Principal], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -156,7 +229,9 @@ export const idlService = IDL.Service({
       [],
     ),
   'createOrUpdatePenilaian' : IDL.Func([CreateOrUpdatePenilaianInput], [], []),
+  'deleteLampiran' : IDL.Func([IDL.Text], [], []),
   'deletePenilaian' : IDL.Func([IDL.Principal], [], []),
+  'getAllLampiran' : IDL.Func([], [IDL.Vec(Lampiran)], ['query']),
   'getAllSortedByScore' : IDL.Func([], [IDL.Vec(T)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getKwartirRantingByOwner' : IDL.Func(
@@ -164,7 +239,13 @@ export const idlService = IDL.Service({
       [IDL.Opt(KwartirRanting)],
       ['query'],
     ),
+  'getLampiranByOwner' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(Lampiran)],
+      ['query'],
+    ),
   'getMyKwartirRanting' : IDL.Func([], [IDL.Opt(KwartirRanting)], ['query']),
+  'getMyLampiran' : IDL.Func([], [IDL.Vec(Lampiran)], ['query']),
   'getPenilaianForOwner' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(Penilaian)],
@@ -181,12 +262,30 @@ export const idlService = IDL.Service({
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const AddLampiranInput = IDL.Record({
+    'blob' : IDL.Opt(ExternalBlob),
+    'namaFile' : IDL.Text,
+    'kategoriKegiatan' : IDL.Text,
+  });
   const KwartirRanting = IDL.Record({
     'kmd' : IDL.Nat,
     'kml' : IDL.Nat,
     'jambore' : IDL.Nat,
     'raimuna' : IDL.Nat,
     'ikutLombaTingkatIII' : IDL.Nat,
+    'dewanKerjaRantingRapat' : IDL.Nat,
     'siagaPutera' : IDL.Nat,
     'siagaPuteri' : IDL.Nat,
     'perkemahanBaktiSatuanKarya' : IDL.Nat,
@@ -194,15 +293,18 @@ export const idlFactory = ({ IDL }) => {
     'satuanKaryaAktif' : IDL.Nat,
     'bazarSiaga' : IDL.Nat,
     'masaBakti' : IDL.Text,
+    'dewanKerjaRantingPeserta' : IDL.Nat,
     'owner' : IDL.Principal,
     'mengirimkanUtusanDewanKerja' : IDL.Nat,
     'partisipasiKaryaBaktiLebaranC3' : IDL.Nat,
     'partisipasiKaryaBaktiLebaranC4' : IDL.Nat,
     'namaKetua' : IDL.Text,
+    'pusdiklatKegiatan' : IDL.Nat,
     'rekruitmenPenegakGaruda' : IDL.Nat,
     'penegakPutera' : IDL.Nat,
     'penegakPuteri' : IDL.Nat,
     'nomorSk' : IDL.Text,
+    'satuanKaryaKegiatan' : IDL.Nat,
     'partisipasiPenangananBencanaC3' : IDL.Nat,
     'partisipasiPenangananBencanaC4' : IDL.Nat,
     'memilkiBumiPerkemahan' : IDL.Bool,
@@ -218,6 +320,7 @@ export const idlFactory = ({ IDL }) => {
     'mengirimkanUtusanLpkdk' : IDL.Nat,
     'pandegaPutera' : IDL.Nat,
     'pandegaPuteri' : IDL.Nat,
+    'pusdiklatPeserta' : IDL.Nat,
     'pembina' : IDL.Nat,
     'dianpinsat' : IDL.Nat,
     'pestaSiaga' : IDL.Nat,
@@ -228,12 +331,14 @@ export const idlFactory = ({ IDL }) => {
     'mengirimkanUtusanKpl' : IDL.Nat,
     'mengirimkanUtusanLpk' : IDL.Nat,
     'mengirimkanUtusanKpdDewasa' : IDL.Nat,
+    'dewanKerjaRantingKegiatan' : IDL.Nat,
     'partisipasiKaryaBaktiNatalC3' : IDL.Nat,
     'partisipasiKaryaBaktiNatalC4' : IDL.Nat,
     'orientasiMajelisPembimbing' : IDL.Nat,
     'memilikiSekretariat' : IDL.Bool,
     'penggalangPutera' : IDL.Nat,
     'penggalangPuteri' : IDL.Nat,
+    'satuanKaryaPerkemahan' : IDL.Nat,
   });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
@@ -246,6 +351,7 @@ export const idlFactory = ({ IDL }) => {
     'jambore' : IDL.Nat,
     'raimuna' : IDL.Nat,
     'ikutLombaTingkatIII' : IDL.Nat,
+    'dewanKerjaRantingRapat' : IDL.Nat,
     'siagaPutera' : IDL.Nat,
     'siagaPuteri' : IDL.Nat,
     'perkemahanBaktiSatuanKarya' : IDL.Nat,
@@ -253,14 +359,17 @@ export const idlFactory = ({ IDL }) => {
     'satuanKaryaAktif' : IDL.Nat,
     'bazarSiaga' : IDL.Nat,
     'masaBakti' : IDL.Text,
+    'dewanKerjaRantingPeserta' : IDL.Nat,
     'mengirimkanUtusanDewanKerja' : IDL.Nat,
     'partisipasiKaryaBaktiLebaranC3' : IDL.Nat,
     'partisipasiKaryaBaktiLebaranC4' : IDL.Nat,
     'namaKetua' : IDL.Text,
+    'pusdiklatKegiatan' : IDL.Nat,
     'rekruitmenPenegakGaruda' : IDL.Nat,
     'penegakPutera' : IDL.Nat,
     'penegakPuteri' : IDL.Nat,
     'nomorSk' : IDL.Text,
+    'satuanKaryaKegiatan' : IDL.Nat,
     'partisipasiPenangananBencanaC3' : IDL.Nat,
     'partisipasiPenangananBencanaC4' : IDL.Nat,
     'memilkiBumiPerkemahan' : IDL.Bool,
@@ -275,6 +384,7 @@ export const idlFactory = ({ IDL }) => {
     'mengirimkanUtusanLpkdk' : IDL.Nat,
     'pandegaPutera' : IDL.Nat,
     'pandegaPuteri' : IDL.Nat,
+    'pusdiklatPeserta' : IDL.Nat,
     'pembina' : IDL.Nat,
     'dianpinsat' : IDL.Nat,
     'pestaSiaga' : IDL.Nat,
@@ -285,26 +395,43 @@ export const idlFactory = ({ IDL }) => {
     'mengirimkanUtusanKpl' : IDL.Nat,
     'mengirimkanUtusanLpk' : IDL.Nat,
     'mengirimkanUtusanKpdDewasa' : IDL.Nat,
+    'dewanKerjaRantingKegiatan' : IDL.Nat,
     'partisipasiKaryaBaktiNatalC3' : IDL.Nat,
     'partisipasiKaryaBaktiNatalC4' : IDL.Nat,
     'orientasiMajelisPembimbing' : IDL.Nat,
     'memilikiSekretariat' : IDL.Bool,
     'penggalangPutera' : IDL.Nat,
     'penggalangPuteri' : IDL.Nat,
+    'satuanKaryaPerkemahan' : IDL.Nat,
   });
   const CreateOrUpdatePenilaianInput = IDL.Record({
+    'skorSatuanKarya' : IDL.Float64,
+    'skorDewanKerja' : IDL.Float64,
     'skorPotensi' : IDL.Float64,
     'skorKegiatan' : IDL.Float64,
+    'skorPusdiklat' : IDL.Float64,
     'skorProfil' : IDL.Float64,
     'kwartirRantingOwner' : IDL.Principal,
     'skorTotal' : IDL.Float64,
     'namaKegiatan' : IDL.Text,
   });
+  const Lampiran = IDL.Record({
+    'id' : IDL.Text,
+    'owner' : IDL.Principal,
+    'blob' : IDL.Opt(ExternalBlob),
+    'namaFile' : IDL.Text,
+    'uploadedAt' : IDL.Int,
+    'uploadedBy' : IDL.Principal,
+    'kategoriKegiatan' : IDL.Text,
+  });
   const Penilaian = IDL.Record({
     'assessedAt' : IDL.Int,
     'assessedBy' : IDL.Principal,
+    'skorSatuanKarya' : IDL.Float64,
+    'skorDewanKerja' : IDL.Float64,
     'skorPotensi' : IDL.Float64,
     'skorKegiatan' : IDL.Float64,
+    'skorPusdiklat' : IDL.Float64,
     'skorProfil' : IDL.Float64,
     'kwartirRantingOwner' : IDL.Principal,
     'skorTotal' : IDL.Float64,
@@ -318,8 +445,35 @@ export const idlFactory = ({ IDL }) => {
   });
   
   return IDL.Service({
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        [],
+        [],
+      ),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addAdminPembantu' : IDL.Func([IDL.Text], [], []),
+    'addLampiran' : IDL.Func([AddLampiranInput], [IDL.Text], []),
     'allKwartirRanting' : IDL.Func([], [IDL.Vec(KwartirRanting)], ['query']),
     'approveAdminPembantu' : IDL.Func([IDL.Principal], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -333,7 +487,9 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'deleteLampiran' : IDL.Func([IDL.Text], [], []),
     'deletePenilaian' : IDL.Func([IDL.Principal], [], []),
+    'getAllLampiran' : IDL.Func([], [IDL.Vec(Lampiran)], ['query']),
     'getAllSortedByScore' : IDL.Func([], [IDL.Vec(T)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getKwartirRantingByOwner' : IDL.Func(
@@ -341,7 +497,13 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(KwartirRanting)],
         ['query'],
       ),
+    'getLampiranByOwner' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(Lampiran)],
+        ['query'],
+      ),
     'getMyKwartirRanting' : IDL.Func([], [IDL.Opt(KwartirRanting)], ['query']),
+    'getMyLampiran' : IDL.Func([], [IDL.Vec(Lampiran)], ['query']),
     'getPenilaianForOwner' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(Penilaian)],

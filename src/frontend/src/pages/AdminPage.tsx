@@ -32,6 +32,7 @@ import {
   FileDown,
   LayoutDashboard,
   Loader2,
+  Paperclip,
   Trash2,
   UserPlus,
   Users,
@@ -51,7 +52,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { Variant_pending_approved } from "../backend";
+import { ExternalBlob, Variant_pending_approved } from "../backend";
 import type { KwartirRanting, Penilaian } from "../backend";
 import PenilaianForm from "../components/PenilaianForm";
 import { useActor } from "../hooks/useActor";
@@ -88,7 +89,7 @@ function formatTanggalID(date: Date): string {
   return `${date.getDate()} ${BULAN_ID[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-type ActiveMenu = "dashboard" | "penilaian" | "pembantu";
+type ActiveMenu = "dashboard" | "penilaian" | "pembantu" | "lampiran";
 
 export default function AdminPage() {
   const { identity } = useInternetIdentity();
@@ -162,6 +163,15 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ["pendingAdminPembantu"] });
     },
     onError: (e) => toast.error(`Gagal menghapus: ${e}`),
+  });
+
+  const { data: allLampiran = [] } = useQuery({
+    queryKey: ["allLampiran"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllLampiran();
+    },
+    enabled: !!actor && !isFetching && !!isAdmin,
   });
 
   const deletePenilaianMutation = useMutation({
@@ -289,7 +299,12 @@ export default function AdminPage() {
     );
   }
 
-  if (isFetching || !actor || loadingAdmin) {
+  if (
+    isFetching ||
+    !actor ||
+    loadingAdmin ||
+    (isAdmin === undefined && isLoggedIn)
+  ) {
     return (
       <div
         className="container mx-auto px-4 py-10"
@@ -301,7 +316,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!isAdmin) {
+  if (isAdmin === false) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <p className="text-muted-foreground">
@@ -364,6 +379,13 @@ export default function AdminPage() {
       icon: <Users className="h-4 w-4" />,
       badge: pending.length > 0 ? pending.length : undefined,
       ocid: "admin.nav.pembantu.link",
+    },
+    {
+      id: "lampiran",
+      label: "Dokumen Lampiran",
+      icon: <Paperclip className="h-4 w-4" />,
+      badge: allLampiran.length > 0 ? allLampiran.length : undefined,
+      ocid: "admin.nav.lampiran.link",
     },
   ];
 
@@ -458,7 +480,7 @@ export default function AdminPage() {
                 </div>
 
                 {/* Stats cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                   <Card
                     className="border-border"
                     data-ocid="admin.stats.total_kr.card"
@@ -561,6 +583,28 @@ export default function AdminPage() {
                           Belum ada data
                         </span>
                       )}
+                    </CardContent>
+                  </Card>
+
+                  <Card
+                    className="border-border"
+                    data-ocid="admin.stats.lampiran.card"
+                  >
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                        <Paperclip className="h-3 w-3" />
+                        Total Lampiran
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-end gap-2">
+                        <span className="text-3xl font-bold font-display text-primary">
+                          {allLampiran.length}
+                        </span>
+                        <span className="text-muted-foreground text-sm mb-0.5">
+                          dokumen
+                        </span>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
@@ -1119,6 +1163,110 @@ export default function AdminPage() {
                     )}
                   </CardContent>
                 </Card>
+              </div>
+            )}
+            {/* Lampiran Panel */}
+            {activeMenu === "lampiran" && (
+              <div className="space-y-6" data-ocid="admin.lampiran.section">
+                <div>
+                  <h1 className="font-display text-2xl font-bold">
+                    Dokumen Lampiran
+                  </h1>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Dokumen yang diunggah oleh peserta KR
+                  </p>
+                </div>
+                {allLampiran.length === 0 ? (
+                  <Card data-ocid="admin.lampiran.empty_state">
+                    <CardContent className="py-12 text-center">
+                      <Paperclip className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                      <p className="text-muted-foreground">
+                        Belum ada lampiran yang diunggah
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  (() => {
+                    const grouped: Record<string, typeof allLampiran> = {};
+                    for (const l of allLampiran) {
+                      if (!grouped[l.kategoriKegiatan])
+                        grouped[l.kategoriKegiatan] = [];
+                      grouped[l.kategoriKegiatan].push(l);
+                    }
+                    return Object.entries(grouped).map(
+                      ([kategori, items], gi) => (
+                        <Card key={kategori} className="border-border">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                              <Paperclip className="h-4 w-4 text-primary" />
+                              {kategori}
+                              <Badge variant="secondary">{items.length}</Badge>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nama File</TableHead>
+                                  <TableHead>Pemilik</TableHead>
+                                  <TableHead>Tanggal Upload</TableHead>
+                                  <TableHead className="text-right">
+                                    Aksi
+                                  </TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {items.map((l, idx) => (
+                                  <TableRow
+                                    key={l.id}
+                                    data-ocid={`admin.lampiran.item.${gi * 100 + idx + 1}`}
+                                  >
+                                    <TableCell className="font-medium">
+                                      {l.namaFile}
+                                    </TableCell>
+                                    <TableCell className="font-mono text-xs">
+                                      ...{l.owner.toString().slice(-8)}
+                                    </TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">
+                                      {formatTanggalID(
+                                        new Date(
+                                          Number(
+                                            l.uploadedAt / BigInt(1_000_000),
+                                          ),
+                                        ),
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                          if (l.blob) {
+                                            window.open(
+                                              ExternalBlob.fromURL(
+                                                l.blob.getDirectURL(),
+                                              ).getDirectURL(),
+                                              "_blank",
+                                            );
+                                          }
+                                        }}
+                                        disabled={!l.blob}
+                                        data-ocid="admin.lampiran.button"
+                                      >
+                                        <FileDown className="h-3 w-3 mr-1" />
+                                        Unduh
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </CardContent>
+                        </Card>
+                      ),
+                    );
+                  })()
+                )}
               </div>
             )}
           </main>

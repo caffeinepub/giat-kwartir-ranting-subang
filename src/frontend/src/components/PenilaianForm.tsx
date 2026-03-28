@@ -37,6 +37,9 @@ export default function PenilaianForm({
   const [skorProfil, setSkorProfil] = useState(0);
   const [skorPotensi, setSkorPotensi] = useState(0);
   const [skorKegiatan, setSkorKegiatan] = useState(0);
+  const [skorDewanKerja, setSkorDewanKerja] = useState(0);
+  const [skorSatuanKarya, setSkorSatuanKarya] = useState(0);
+  const [skorPusdiklat, setSkorPusdiklat] = useState(0);
 
   useEffect(() => {
     if (existingPenilaian) {
@@ -44,15 +47,27 @@ export default function PenilaianForm({
       setSkorProfil(existingPenilaian.skorProfil);
       setSkorPotensi(existingPenilaian.skorPotensi);
       setSkorKegiatan(existingPenilaian.skorKegiatan);
+      setSkorDewanKerja(existingPenilaian.skorDewanKerja);
+      setSkorSatuanKarya(existingPenilaian.skorSatuanKarya);
+      setSkorPusdiklat(existingPenilaian.skorPusdiklat);
     } else {
       setNamaKegiatan("");
       setSkorProfil(0);
       setSkorPotensi(0);
       setSkorKegiatan(0);
+      setSkorDewanKerja(0);
+      setSkorSatuanKarya(0);
+      setSkorPusdiklat(0);
     }
   }, [existingPenilaian]);
 
-  const skorTotal = skorProfil + skorPotensi + skorKegiatan;
+  const skorTotal =
+    skorProfil +
+    skorPotensi +
+    skorKegiatan +
+    skorDewanKerja +
+    skorSatuanKarya +
+    skorPusdiklat;
 
   const handleSubmit = async () => {
     if (!actor) return;
@@ -63,6 +78,9 @@ export default function PenilaianForm({
         skorProfil,
         skorPotensi,
         skorKegiatan,
+        skorDewanKerja,
+        skorSatuanKarya,
+        skorPusdiklat,
         skorTotal,
         kwartirRantingOwner: kwartirRanting.owner as Principal,
       });
@@ -80,7 +98,7 @@ export default function PenilaianForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
             Penilaian: {kwartirRanting.namaKwartirRanting}
@@ -124,6 +142,41 @@ export default function PenilaianForm({
                 max={100}
                 value={skorKegiatan}
                 onChange={(e) => setSkorKegiatan(Number(e.target.value))}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <Label>Skor Dewan Kerja</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={skorDewanKerja}
+                onChange={(e) => setSkorDewanKerja(Number(e.target.value))}
+                data-ocid="penilaian.dewan_kerja.input"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Skor Satuan Karya</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={skorSatuanKarya}
+                onChange={(e) => setSkorSatuanKarya(Number(e.target.value))}
+                data-ocid="penilaian.satuan_karya.input"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Skor Pusdiklat</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={skorPusdiklat}
+                onChange={(e) => setSkorPusdiklat(Number(e.target.value))}
+                data-ocid="penilaian.pusdiklat.input"
               />
             </div>
           </div>

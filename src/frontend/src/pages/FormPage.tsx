@@ -17,9 +17,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Save, Send } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Loader2, Paperclip, Save, Send, Trash2, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ExternalBlob } from "../backend";
 import type { CreateOrUpdateKwartirRantingInput } from "../backend";
 import { useActor } from "../hooks/useActor";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
@@ -75,6 +76,13 @@ type FormState = {
   partisipasiPenangananBencanaC4: string;
   partisipasiKaryaBaktiNatalC4: string;
   partisipasiKaryaBaktiLebaranC4: string;
+  dewanKerjaRantingRapat: string;
+  dewanKerjaRantingKegiatan: string;
+  dewanKerjaRantingPeserta: string;
+  satuanKaryaKegiatan: string;
+  satuanKaryaPerkemahan: string;
+  pusdiklatKegiatan: string;
+  pusdiklatPeserta: string;
 };
 
 const defaultForm: FormState = {
@@ -128,6 +136,13 @@ const defaultForm: FormState = {
   partisipasiPenangananBencanaC4: "0",
   partisipasiKaryaBaktiNatalC4: "0",
   partisipasiKaryaBaktiLebaranC4: "0",
+  dewanKerjaRantingRapat: "0",
+  dewanKerjaRantingKegiatan: "0",
+  dewanKerjaRantingPeserta: "0",
+  satuanKaryaKegiatan: "0",
+  satuanKaryaPerkemahan: "0",
+  pusdiklatKegiatan: "0",
+  pusdiklatPeserta: "0",
 };
 
 function toBigInt(v: string): bigint {
@@ -194,6 +209,13 @@ function toInput(form: FormState): CreateOrUpdateKwartirRantingInput {
     partisipasiKaryaBaktiLebaranC4: toBigInt(
       form.partisipasiKaryaBaktiLebaranC4,
     ),
+    dewanKerjaRantingRapat: toBigInt(form.dewanKerjaRantingRapat),
+    dewanKerjaRantingKegiatan: toBigInt(form.dewanKerjaRantingKegiatan),
+    dewanKerjaRantingPeserta: toBigInt(form.dewanKerjaRantingPeserta),
+    satuanKaryaKegiatan: toBigInt(form.satuanKaryaKegiatan),
+    satuanKaryaPerkemahan: toBigInt(form.satuanKaryaPerkemahan),
+    pusdiklatKegiatan: toBigInt(form.pusdiklatKegiatan),
+    pusdiklatPeserta: toBigInt(form.pusdiklatPeserta),
   };
 }
 
@@ -212,6 +234,138 @@ function NumInput({
         onChange={(e) => onChange(e.target.value)}
         className="h-9"
       />
+    </div>
+  );
+}
+
+function LampiranUploader({
+  kategori,
+  actor,
+  isLoggedIn,
+}: {
+  kategori: string;
+  actor: any;
+  isLoggedIn: boolean;
+}) {
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const { data: myLampiran = [] } = useQuery({
+    queryKey: ["myLampiran"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getMyLampiran();
+    },
+    enabled: isLoggedIn && !!actor,
+  });
+
+  const filtered = myLampiran.filter(
+    (l: any) => l.kategoriKegiatan === kategori,
+  );
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !actor) return;
+    setUploading(true);
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const blob = ExternalBlob.fromBytes(bytes);
+      await actor.addLampiran({
+        kategoriKegiatan: kategori,
+        namaFile: file.name,
+        blob,
+      });
+      toast.success("Lampiran berhasil diunggah!");
+      queryClient.invalidateQueries({ queryKey: ["myLampiran"] });
+    } catch (err) {
+      toast.error(`Gagal unggah: ${err}`);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!actor) return;
+    try {
+      await actor.deleteLampiran(id);
+      toast.success("Lampiran dihapus!");
+      queryClient.invalidateQueries({ queryKey: ["myLampiran"] });
+    } catch (err) {
+      toast.error(`Gagal hapus: ${err}`);
+    }
+  };
+
+  if (!isLoggedIn) return null;
+
+  return (
+    <div
+      className="mt-3 border border-dashed border-border rounded-lg p-3 bg-muted/30"
+      data-ocid="lampiran.dropzone"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <Paperclip className="h-3 w-3" />
+          <span>Lampiran</span>
+          {filtered.length > 0 && (
+            <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-full text-xs">
+              {filtered.length}
+            </span>
+          )}
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="h-7 text-xs"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          data-ocid="lampiran.upload_button"
+        >
+          {uploading ? (
+            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          ) : (
+            <Upload className="h-3 w-3 mr-1" />
+          )}
+          Unggah
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+      {filtered.length > 0 ? (
+        <ul className="space-y-1">
+          {filtered.map((l: any) => (
+            <li
+              key={l.id}
+              className="flex items-center justify-between text-xs bg-background rounded px-2 py-1.5"
+            >
+              <span className="truncate flex-1 text-foreground">
+                {l.namaFile}
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0 text-destructive hover:text-destructive ml-2 flex-shrink-0"
+                onClick={() => handleDelete(l.id)}
+                data-ocid="lampiran.delete_button"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-xs text-muted-foreground text-center py-1">
+          Belum ada lampiran
+        </p>
+      )}
     </div>
   );
 }
@@ -310,6 +464,13 @@ export default function FormPage() {
         partisipasiKaryaBaktiLebaranC4: String(
           existingKR.partisipasiKaryaBaktiLebaranC4,
         ),
+        dewanKerjaRantingRapat: String(existingKR.dewanKerjaRantingRapat),
+        dewanKerjaRantingKegiatan: String(existingKR.dewanKerjaRantingKegiatan),
+        dewanKerjaRantingPeserta: String(existingKR.dewanKerjaRantingPeserta),
+        satuanKaryaKegiatan: String(existingKR.satuanKaryaKegiatan),
+        satuanKaryaPerkemahan: String(existingKR.satuanKaryaPerkemahan),
+        pusdiklatKegiatan: String(existingKR.pusdiklatKegiatan),
+        pusdiklatPeserta: String(existingKR.pusdiklatPeserta),
       });
     }
   }, [existingKR]);
@@ -532,7 +693,7 @@ export default function FormPage() {
               </div>
               <div>
                 <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
-                  Anggota Dewasa & Lainnya
+                  Anggota Dewasa &amp; Lainnya
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   <NumInput
@@ -584,6 +745,11 @@ export default function FormPage() {
                     onChange={set("rekruitmenSiagaGaruda")}
                   />
                 </div>
+                <LampiranUploader
+                  kategori="C1-Siaga"
+                  actor={actor}
+                  isLoggedIn={isLoggedIn}
+                />
               </div>
               <div>
                 <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
@@ -621,6 +787,11 @@ export default function FormPage() {
                     onChange={set("rekruitmenPenggalangGaruda")}
                   />
                 </div>
+                <LampiranUploader
+                  kategori="C2-Penggalang"
+                  actor={actor}
+                  isLoggedIn={isLoggedIn}
+                />
               </div>
               <div>
                 <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
@@ -683,6 +854,11 @@ export default function FormPage() {
                     onChange={set("partisipasiKaryaBaktiLebaranC3")}
                   />
                 </div>
+                <LampiranUploader
+                  kategori="C3-PenegakPandega"
+                  actor={actor}
+                  isLoggedIn={isLoggedIn}
+                />
               </div>
               <div>
                 <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
@@ -740,6 +916,85 @@ export default function FormPage() {
                     onChange={set("partisipasiKaryaBaktiLebaranC4")}
                   />
                 </div>
+                <LampiranUploader
+                  kategori="C4-Dewasa"
+                  actor={actor}
+                  isLoggedIn={isLoggedIn}
+                />
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
+                  C.5 Dewan Kerja Ranting
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <NumInput
+                    label="Jumlah Rapat DKR"
+                    value={form.dewanKerjaRantingRapat}
+                    onChange={set("dewanKerjaRantingRapat")}
+                  />
+                  <NumInput
+                    label="Jumlah Kegiatan DKR"
+                    value={form.dewanKerjaRantingKegiatan}
+                    onChange={set("dewanKerjaRantingKegiatan")}
+                  />
+                  <NumInput
+                    label="Jumlah Peserta DKR"
+                    value={form.dewanKerjaRantingPeserta}
+                    onChange={set("dewanKerjaRantingPeserta")}
+                  />
+                </div>
+                <LampiranUploader
+                  kategori="C5-DewanKerjaRanting"
+                  actor={actor}
+                  isLoggedIn={isLoggedIn}
+                />
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
+                  C.6 Satuan Karya
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <NumInput
+                    label="Kegiatan Satuan Karya"
+                    value={form.satuanKaryaKegiatan}
+                    onChange={set("satuanKaryaKegiatan")}
+                  />
+                  <NumInput
+                    label="Perkemahan Satuan Karya"
+                    value={form.satuanKaryaPerkemahan}
+                    onChange={set("satuanKaryaPerkemahan")}
+                  />
+                </div>
+                <LampiranUploader
+                  kategori="C6-SatuanKarya"
+                  actor={actor}
+                  isLoggedIn={isLoggedIn}
+                />
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm text-muted-foreground uppercase tracking-wide">
+                  C.7 Pusdiklat
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <NumInput
+                    label="Jumlah Kegiatan Pusdiklat"
+                    value={form.pusdiklatKegiatan}
+                    onChange={set("pusdiklatKegiatan")}
+                  />
+                  <NumInput
+                    label="Jumlah Peserta Pusdiklat"
+                    value={form.pusdiklatPeserta}
+                    onChange={set("pusdiklatPeserta")}
+                  />
+                </div>
+                <LampiranUploader
+                  kategori="C7-Pusdiklat"
+                  actor={actor}
+                  isLoggedIn={isLoggedIn}
+                />
               </div>
             </CardContent>
           </Card>

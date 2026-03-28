@@ -89,29 +89,47 @@ export class ExternalBlob {
         return this;
     }
 }
+export interface AddLampiranInput {
+    blob?: ExternalBlob;
+    namaFile: string;
+    kategoriKegiatan: string;
+}
 export interface AdminPembantu {
     status: Variant_pending_approved;
     principal: Principal;
     namaKwartirRanting: string;
 }
 export type T = [KwartirRanting, Penilaian | null];
+export interface _CaffeineStorageRefillInformation {
+    proposed_top_up_amount?: bigint;
+}
 export interface Penilaian {
     assessedAt: bigint;
     assessedBy: Principal;
+    skorSatuanKarya: number;
+    skorDewanKerja: number;
     skorPotensi: number;
     skorKegiatan: number;
+    skorPusdiklat: number;
     skorProfil: number;
     kwartirRantingOwner: Principal;
     skorTotal: number;
     namaKegiatan: string;
 }
 export interface CreateOrUpdatePenilaianInput {
+    skorSatuanKarya: number;
+    skorDewanKerja: number;
     skorPotensi: number;
     skorKegiatan: number;
+    skorPusdiklat: number;
     skorProfil: number;
     kwartirRantingOwner: Principal;
     skorTotal: number;
     namaKegiatan: string;
+}
+export interface _CaffeineStorageCreateCertificateResult {
+    method: string;
+    blob_hash: string;
 }
 export interface KwartirRanting {
     kmd: bigint;
@@ -119,6 +137,7 @@ export interface KwartirRanting {
     jambore: bigint;
     raimuna: bigint;
     ikutLombaTingkatIII: bigint;
+    dewanKerjaRantingRapat: bigint;
     siagaPutera: bigint;
     siagaPuteri: bigint;
     perkemahanBaktiSatuanKarya: bigint;
@@ -126,15 +145,18 @@ export interface KwartirRanting {
     satuanKaryaAktif: bigint;
     bazarSiaga: bigint;
     masaBakti: string;
+    dewanKerjaRantingPeserta: bigint;
     owner: Principal;
     mengirimkanUtusanDewanKerja: bigint;
     partisipasiKaryaBaktiLebaranC3: bigint;
     partisipasiKaryaBaktiLebaranC4: bigint;
     namaKetua: string;
+    pusdiklatKegiatan: bigint;
     rekruitmenPenegakGaruda: bigint;
     penegakPutera: bigint;
     penegakPuteri: bigint;
     nomorSk: string;
+    satuanKaryaKegiatan: bigint;
     partisipasiPenangananBencanaC3: bigint;
     partisipasiPenangananBencanaC4: bigint;
     memilkiBumiPerkemahan: boolean;
@@ -150,6 +172,7 @@ export interface KwartirRanting {
     mengirimkanUtusanLpkdk: bigint;
     pandegaPutera: bigint;
     pandegaPuteri: bigint;
+    pusdiklatPeserta: bigint;
     pembina: bigint;
     dianpinsat: bigint;
     pestaSiaga: bigint;
@@ -160,12 +183,14 @@ export interface KwartirRanting {
     mengirimkanUtusanKpl: bigint;
     mengirimkanUtusanLpk: bigint;
     mengirimkanUtusanKpdDewasa: bigint;
+    dewanKerjaRantingKegiatan: bigint;
     partisipasiKaryaBaktiNatalC3: bigint;
     partisipasiKaryaBaktiNatalC4: bigint;
     orientasiMajelisPembimbing: bigint;
     memilikiSekretariat: boolean;
     penggalangPutera: bigint;
     penggalangPuteri: bigint;
+    satuanKaryaPerkemahan: bigint;
 }
 export interface CreateOrUpdateKwartirRantingInput {
     kmd: bigint;
@@ -173,6 +198,7 @@ export interface CreateOrUpdateKwartirRantingInput {
     jambore: bigint;
     raimuna: bigint;
     ikutLombaTingkatIII: bigint;
+    dewanKerjaRantingRapat: bigint;
     siagaPutera: bigint;
     siagaPuteri: bigint;
     perkemahanBaktiSatuanKarya: bigint;
@@ -180,14 +206,17 @@ export interface CreateOrUpdateKwartirRantingInput {
     satuanKaryaAktif: bigint;
     bazarSiaga: bigint;
     masaBakti: string;
+    dewanKerjaRantingPeserta: bigint;
     mengirimkanUtusanDewanKerja: bigint;
     partisipasiKaryaBaktiLebaranC3: bigint;
     partisipasiKaryaBaktiLebaranC4: bigint;
     namaKetua: string;
+    pusdiklatKegiatan: bigint;
     rekruitmenPenegakGaruda: bigint;
     penegakPutera: bigint;
     penegakPuteri: bigint;
     nomorSk: string;
+    satuanKaryaKegiatan: bigint;
     partisipasiPenangananBencanaC3: bigint;
     partisipasiPenangananBencanaC4: bigint;
     memilkiBumiPerkemahan: boolean;
@@ -202,6 +231,7 @@ export interface CreateOrUpdateKwartirRantingInput {
     mengirimkanUtusanLpkdk: bigint;
     pandegaPutera: bigint;
     pandegaPuteri: bigint;
+    pusdiklatPeserta: bigint;
     pembina: bigint;
     dianpinsat: bigint;
     pestaSiaga: bigint;
@@ -212,12 +242,27 @@ export interface CreateOrUpdateKwartirRantingInput {
     mengirimkanUtusanKpl: bigint;
     mengirimkanUtusanLpk: bigint;
     mengirimkanUtusanKpdDewasa: bigint;
+    dewanKerjaRantingKegiatan: bigint;
     partisipasiKaryaBaktiNatalC3: bigint;
     partisipasiKaryaBaktiNatalC4: bigint;
     orientasiMajelisPembimbing: bigint;
     memilikiSekretariat: boolean;
     penggalangPutera: bigint;
     penggalangPuteri: bigint;
+    satuanKaryaPerkemahan: bigint;
+}
+export interface _CaffeineStorageRefillResult {
+    success?: boolean;
+    topped_up_amount?: bigint;
+}
+export interface Lampiran {
+    id: string;
+    owner: Principal;
+    blob?: ExternalBlob;
+    namaFile: string;
+    uploadedAt: bigint;
+    uploadedBy: Principal;
+    kategoriKegiatan: string;
 }
 export enum UserRole {
     admin = "admin",
@@ -229,18 +274,29 @@ export enum Variant_pending_approved {
     approved = "approved"
 }
 export interface backendInterface {
+    _caffeineStorageBlobIsLive(hash: Uint8Array): Promise<boolean>;
+    _caffeineStorageBlobsToDelete(): Promise<Array<Uint8Array>>;
+    _caffeineStorageConfirmBlobDeletion(blobs: Array<Uint8Array>): Promise<void>;
+    _caffeineStorageCreateCertificate(blobHash: string): Promise<_CaffeineStorageCreateCertificateResult>;
+    _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
+    _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
     addAdminPembantu(namaKwartirRanting: string): Promise<void>;
+    addLampiran(input: AddLampiranInput): Promise<string>;
     allKwartirRanting(): Promise<Array<KwartirRanting>>;
     approveAdminPembantu(principal: Principal): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createOrUpdateKwartirRanting(input: CreateOrUpdateKwartirRantingInput): Promise<void>;
     createOrUpdatePenilaian(input: CreateOrUpdatePenilaianInput): Promise<void>;
+    deleteLampiran(id: string): Promise<void>;
     deletePenilaian(owner: Principal): Promise<void>;
+    getAllLampiran(): Promise<Array<Lampiran>>;
     getAllSortedByScore(): Promise<Array<T>>;
     getCallerUserRole(): Promise<UserRole>;
     getKwartirRantingByOwner(owner: Principal): Promise<KwartirRanting | null>;
+    getLampiranByOwner(owner: Principal): Promise<Array<Lampiran>>;
     getMyKwartirRanting(): Promise<KwartirRanting | null>;
+    getMyLampiran(): Promise<Array<Lampiran>>;
     getPenilaianForOwner(owner: Principal): Promise<Penilaian | null>;
     isAdminPembantuCheck(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
@@ -249,9 +305,93 @@ export interface backendInterface {
     removeAdminPembantu(principal: Principal): Promise<void>;
     submitKwartirRanting(): Promise<void>;
 }
-import type { AdminPembantu as _AdminPembantu, KwartirRanting as _KwartirRanting, Penilaian as _Penilaian, T as _T, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { AddLampiranInput as _AddLampiranInput, AdminPembantu as _AdminPembantu, ExternalBlob as _ExternalBlob, KwartirRanting as _KwartirRanting, Lampiran as _Lampiran, Penilaian as _Penilaian, T as _T, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor._caffeineStorageBlobIsLive(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor._caffeineStorageBlobIsLive(arg0);
+            return result;
+        }
+    }
+    async _caffeineStorageBlobsToDelete(): Promise<Array<Uint8Array>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor._caffeineStorageBlobsToDelete();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor._caffeineStorageBlobsToDelete();
+            return result;
+        }
+    }
+    async _caffeineStorageConfirmBlobDeletion(arg0: Array<Uint8Array>): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor._caffeineStorageConfirmBlobDeletion(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor._caffeineStorageConfirmBlobDeletion(arg0);
+            return result;
+        }
+    }
+    async _caffeineStorageCreateCertificate(arg0: string): Promise<_CaffeineStorageCreateCertificateResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor._caffeineStorageCreateCertificate(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor._caffeineStorageCreateCertificate(arg0);
+            return result;
+        }
+    }
+    async _caffeineStorageRefillCashier(arg0: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor._caffeineStorageRefillCashier(to_candid_opt_n1(this._uploadFile, this._downloadFile, arg0));
+                return from_candid__CaffeineStorageRefillResult_n4(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor._caffeineStorageRefillCashier(to_candid_opt_n1(this._uploadFile, this._downloadFile, arg0));
+            return from_candid__CaffeineStorageRefillResult_n4(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async _caffeineStorageUpdateGatewayPrincipals(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor._caffeineStorageUpdateGatewayPrincipals();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor._caffeineStorageUpdateGatewayPrincipals();
+            return result;
+        }
+    }
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -277,6 +417,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.addAdminPembantu(arg0);
+            return result;
+        }
+    }
+    async addLampiran(arg0: AddLampiranInput): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addLampiran(await to_candid_AddLampiranInput_n8(this._uploadFile, this._downloadFile, arg0));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addLampiran(await to_candid_AddLampiranInput_n8(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -311,14 +465,14 @@ export class Backend implements backendInterface {
     async assignCallerUserRole(arg0: Principal, arg1: UserRole): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n11(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n11(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -350,6 +504,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async deleteLampiran(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteLampiran(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteLampiran(arg0);
+            return result;
+        }
+    }
     async deletePenilaian(arg0: Principal): Promise<void> {
         if (this.processError) {
             try {
@@ -364,74 +532,116 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getAllLampiran(): Promise<Array<Lampiran>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllLampiran();
+                return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllLampiran();
+            return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getAllSortedByScore(): Promise<Array<T>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllSortedByScore();
-                return from_candid_vec_n3(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllSortedByScore();
-            return from_candid_vec_n3(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n18(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n7(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n22(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n7(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n22(this._uploadFile, this._downloadFile, result);
         }
     }
     async getKwartirRantingByOwner(arg0: Principal): Promise<KwartirRanting | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getKwartirRantingByOwner(arg0);
-                return from_candid_opt_n9(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getKwartirRantingByOwner(arg0);
-            return from_candid_opt_n9(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getLampiranByOwner(arg0: Principal): Promise<Array<Lampiran>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getLampiranByOwner(arg0);
+                return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getLampiranByOwner(arg0);
+            return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
         }
     }
     async getMyKwartirRanting(): Promise<KwartirRanting | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getMyKwartirRanting();
-                return from_candid_opt_n9(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getMyKwartirRanting();
-            return from_candid_opt_n9(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n24(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getMyLampiran(): Promise<Array<Lampiran>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMyLampiran();
+                return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMyLampiran();
+            return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
         }
     }
     async getPenilaianForOwner(arg0: Principal): Promise<Penilaian | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getPenilaianForOwner(arg0);
-                return from_candid_opt_n6(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getPenilaianForOwner(arg0);
-            return from_candid_opt_n6(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
         }
     }
     async isAdminPembantuCheck(): Promise<boolean> {
@@ -480,14 +690,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.pendingAdminPembantu();
-                return from_candid_vec_n10(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n25(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.pendingAdminPembantu();
-            return from_candid_vec_n10(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n25(this._uploadFile, this._downloadFile, result);
         }
     }
     async removeAdminPembantu(arg0: Principal): Promise<void> {
@@ -519,22 +729,67 @@ export class Backend implements backendInterface {
         }
     }
 }
-function from_candid_AdminPembantu_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AdminPembantu): AdminPembantu {
-    return from_candid_record_n12(_uploadFile, _downloadFile, value);
+function from_candid_AdminPembantu_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AdminPembantu): AdminPembantu {
+    return from_candid_record_n27(_uploadFile, _downloadFile, value);
 }
-function from_candid_T_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _T): T {
-    return from_candid_tuple_n5(_uploadFile, _downloadFile, value);
+async function from_candid_ExternalBlob_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ExternalBlob): Promise<ExternalBlob> {
+    return await _downloadFile(value);
 }
-function from_candid_UserRole_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n8(_uploadFile, _downloadFile, value);
+async function from_candid_Lampiran_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Lampiran): Promise<Lampiran> {
+    return await from_candid_record_n15(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Penilaian]): Penilaian | null {
+function from_candid_T_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _T): T {
+    return from_candid_tuple_n20(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserRole_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n23(_uploadFile, _downloadFile, value);
+}
+function from_candid__CaffeineStorageRefillResult_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: __CaffeineStorageRefillResult): _CaffeineStorageRefillResult {
+    return from_candid_record_n5(_uploadFile, _downloadFile, value);
+}
+async function from_candid_opt_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_ExternalBlob]): Promise<ExternalBlob | null> {
+    return value.length === 0 ? null : await from_candid_ExternalBlob_n17(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Penilaian]): Penilaian | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_KwartirRanting]): KwartirRanting | null {
+function from_candid_opt_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_KwartirRanting]): KwartirRanting | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_record_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
+    return value.length === 0 ? null : value[0];
+}
+async function from_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: string;
+    owner: Principal;
+    blob: [] | [_ExternalBlob];
+    namaFile: string;
+    uploadedAt: bigint;
+    uploadedBy: Principal;
+    kategoriKegiatan: string;
+}): Promise<{
+    id: string;
+    owner: Principal;
+    blob?: ExternalBlob;
+    namaFile: string;
+    uploadedAt: bigint;
+    uploadedBy: Principal;
+    kategoriKegiatan: string;
+}> {
+    return {
+        id: value.id,
+        owner: value.owner,
+        blob: record_opt_to_undefined(await from_candid_opt_n16(_uploadFile, _downloadFile, value.blob)),
+        namaFile: value.namaFile,
+        uploadedAt: value.uploadedAt,
+        uploadedBy: value.uploadedBy,
+        kategoriKegiatan: value.kategoriKegiatan
+    };
+}
+function from_candid_record_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     status: {
         pending: null;
     } | {
@@ -548,25 +803,30 @@ function from_candid_record_n12(_uploadFile: (file: ExternalBlob) => Promise<Uin
     namaKwartirRanting: string;
 } {
     return {
-        status: from_candid_variant_n13(_uploadFile, _downloadFile, value.status),
+        status: from_candid_variant_n28(_uploadFile, _downloadFile, value.status),
         principal: value.principal,
         namaKwartirRanting: value.namaKwartirRanting
     };
 }
-function from_candid_tuple_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [_KwartirRanting, [] | [_Penilaian]]): [KwartirRanting, Penilaian | null] {
+function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    success: [] | [boolean];
+    topped_up_amount: [] | [bigint];
+}): {
+    success?: boolean;
+    topped_up_amount?: bigint;
+} {
+    return {
+        success: record_opt_to_undefined(from_candid_opt_n6(_uploadFile, _downloadFile, value.success)),
+        topped_up_amount: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.topped_up_amount))
+    };
+}
+function from_candid_tuple_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [_KwartirRanting, [] | [_Penilaian]]): [KwartirRanting, Penilaian | null] {
     return [
         value[0],
-        from_candid_opt_n6(_uploadFile, _downloadFile, value[1])
+        from_candid_opt_n21(_uploadFile, _downloadFile, value[1])
     ];
 }
-function from_candid_variant_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    pending: null;
-} | {
-    approved: null;
-}): Variant_pending_approved {
-    return "pending" in value ? Variant_pending_approved.pending : "approved" in value ? Variant_pending_approved.approved : value;
-}
-function from_candid_variant_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -575,16 +835,62 @@ function from_candid_variant_n8(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_vec_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_AdminPembantu>): Array<AdminPembantu> {
-    return value.map((x)=>from_candid_AdminPembantu_n11(_uploadFile, _downloadFile, x));
+function from_candid_variant_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    pending: null;
+} | {
+    approved: null;
+}): Variant_pending_approved {
+    return "pending" in value ? Variant_pending_approved.pending : "approved" in value ? Variant_pending_approved.approved : value;
 }
-function from_candid_vec_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_T>): Array<T> {
-    return value.map((x)=>from_candid_T_n4(_uploadFile, _downloadFile, x));
+async function from_candid_vec_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Lampiran>): Promise<Array<Lampiran>> {
+    return await Promise.all(value.map(async (x)=>await from_candid_Lampiran_n14(_uploadFile, _downloadFile, x)));
 }
-function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
-    return to_candid_variant_n2(_uploadFile, _downloadFile, value);
+function from_candid_vec_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_T>): Array<T> {
+    return value.map((x)=>from_candid_T_n19(_uploadFile, _downloadFile, x));
 }
-function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
+function from_candid_vec_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_AdminPembantu>): Array<AdminPembantu> {
+    return value.map((x)=>from_candid_AdminPembantu_n26(_uploadFile, _downloadFile, x));
+}
+async function to_candid_AddLampiranInput_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AddLampiranInput): Promise<_AddLampiranInput> {
+    return await to_candid_record_n9(_uploadFile, _downloadFile, value);
+}
+async function to_candid_ExternalBlob_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob): Promise<_ExternalBlob> {
+    return await _uploadFile(value);
+}
+function to_candid_UserRole_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
+    return to_candid_variant_n12(_uploadFile, _downloadFile, value);
+}
+function to_candid__CaffeineStorageRefillInformation_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CaffeineStorageRefillInformation): __CaffeineStorageRefillInformation {
+    return to_candid_record_n3(_uploadFile, _downloadFile, value);
+}
+function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CaffeineStorageRefillInformation | null): [] | [__CaffeineStorageRefillInformation] {
+    return value === null ? candid_none() : candid_some(to_candid__CaffeineStorageRefillInformation_n2(_uploadFile, _downloadFile, value));
+}
+function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    proposed_top_up_amount?: bigint;
+}): {
+    proposed_top_up_amount: [] | [bigint];
+} {
+    return {
+        proposed_top_up_amount: value.proposed_top_up_amount ? candid_some(value.proposed_top_up_amount) : candid_none()
+    };
+}
+async function to_candid_record_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    blob?: ExternalBlob;
+    namaFile: string;
+    kategoriKegiatan: string;
+}): Promise<{
+    blob: [] | [_ExternalBlob];
+    namaFile: string;
+    kategoriKegiatan: string;
+}> {
+    return {
+        blob: value.blob ? candid_some(await to_candid_ExternalBlob_n10(_uploadFile, _downloadFile, value.blob)) : candid_none(),
+        namaFile: value.namaFile,
+        kategoriKegiatan: value.kategoriKegiatan
+    };
+}
+function to_candid_variant_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
     admin: null;
 } | {
     user: null;

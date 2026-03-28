@@ -86,28 +86,44 @@ export default function HomePage() {
     <div>
       {/* Hero */}
       <section
-        className="relative bg-primary text-primary-foreground py-20 px-4 overflow-hidden"
+        className="relative text-primary-foreground py-20 px-4 overflow-hidden"
         style={{
           background:
-            "linear-gradient(135deg, oklch(0.35 0.13 145) 0%, oklch(0.42 0.13 145) 50%, oklch(0.5 0.15 150) 100%)",
+            "linear-gradient(135deg, oklch(0.26 0.1 145) 0%, oklch(0.33 0.12 145) 45%, oklch(0.4 0.14 150) 100%)",
         }}
       >
+        {/* Decorative blobs */}
         <div
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 80%, oklch(0.8 0.15 80) 0%, transparent 50%), radial-gradient(circle at 80% 20%, oklch(0.7 0.1 160) 0%, transparent 50%)",
+              "radial-gradient(ellipse at 15% 85%, oklch(0.75 0.17 80 / 0.15) 0%, transparent 45%), radial-gradient(ellipse at 85% 15%, oklch(0.55 0.15 160 / 0.2) 0%, transparent 45%)",
+          }}
+        />
+        {/* Subtle pattern overlay */}
+        <div
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, oklch(0.99 0 0) 0px, oklch(0.99 0 0) 1px, transparent 1px, transparent 30px)",
           }}
         />
         <div className="container mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 text-sm mb-6">
-            <Star className="h-4 w-4 fill-current" />
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm mb-6 font-medium"
+            style={{
+              background: "oklch(0.75 0.17 80 / 0.2)",
+              border: "1px solid oklch(0.75 0.17 80 / 0.4)",
+              color: "oklch(0.9 0.12 80)",
+            }}
+          >
+            <Star className="h-3.5 w-3.5 fill-current" />
             Program Giat Kwartir Ranting
           </div>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
             Penilaian Kwartir Ranting
           </h1>
-          <p className="text-lg md:text-xl opacity-85 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl opacity-80 mb-8 max-w-2xl mx-auto">
             Program Giat Kwartir Ranting Kwarcab Subang — Platform Penilaian
             Resmi
           </p>
@@ -115,7 +131,11 @@ export default function HomePage() {
             <Button
               asChild
               size="lg"
-              className="bg-white text-primary hover:bg-white/90 font-semibold"
+              style={{
+                background: "oklch(0.75 0.17 80)",
+                color: "oklch(0.22 0.06 80)",
+              }}
+              className="font-semibold hover:opacity-90 border-0 shadow-md"
             >
               <Link to="/ranking" data-ocid="home.lihat_ranking.button">
                 <Trophy className="h-4 w-4 mr-2" /> Lihat Semua Ranking
@@ -126,7 +146,7 @@ export default function HomePage() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-white/50 text-white hover:bg-white/10"
+                className="border-white/40 text-white hover:bg-white/10"
               >
                 <Link to="/form" data-ocid="home.mulai_penilaian.button">
                   Mulai Penilaian
@@ -136,7 +156,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/50 text-white hover:bg-white/10"
+                className="border-white/40 text-white hover:bg-white/10"
                 onClick={login}
                 disabled={isLoggingIn}
                 data-ocid="home.mulai_penilaian.button"
@@ -152,7 +172,10 @@ export default function HomePage() {
       </section>
 
       {/* Stats */}
-      <section className="bg-card border-b py-8">
+      <section
+        className="border-b py-8"
+        style={{ background: "oklch(0.97 0.01 145)" }}
+      >
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
@@ -160,22 +183,44 @@ export default function HomePage() {
                 icon: Trophy,
                 label: "Total KR Terdaftar",
                 value: rankings?.length ?? "–",
+                color: "oklch(0.38 0.14 145)",
               },
               {
                 icon: Award,
                 label: "KR Dinilai",
                 value: rankings?.filter(([, p]) => p !== null).length ?? "–",
+                color: "oklch(0.75 0.17 80)",
               },
-              { icon: Users, label: "Kwarcab", value: "Subang" },
-              { icon: Star, label: "Program", value: "Giat KR" },
-            ].map(({ icon: Icon, label, value }) => (
-              <Card key={label} className="text-center">
-                <CardContent className="pt-4 pb-4">
-                  <Icon className="h-6 w-6 text-primary mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-primary">
+              {
+                icon: Users,
+                label: "Kwarcab",
+                value: "Subang",
+                color: "oklch(0.45 0.15 200)",
+              },
+              {
+                icon: Star,
+                label: "Program",
+                value: "Giat KR",
+                color: "oklch(0.38 0.14 145)",
+              },
+            ].map(({ icon: Icon, label, value, color }) => (
+              <Card
+                key={label}
+                className="text-center border-border/60 shadow-xs"
+              >
+                <CardContent className="pt-5 pb-5">
+                  <div
+                    className="h-10 w-10 rounded-full flex items-center justify-center mx-auto mb-2"
+                    style={{ background: `${color}20` }}
+                  >
+                    <Icon className="h-5 w-5" style={{ color }} />
+                  </div>
+                  <p className="text-2xl font-bold" style={{ color }}>
                     {String(value)}
                   </p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {label}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -202,7 +247,7 @@ export default function HomePage() {
             </Button>
           </div>
 
-          <Card>
+          <Card className="shadow-xs">
             <CardContent className="p-0">
               {isLoading ? (
                 <div
@@ -239,12 +284,25 @@ export default function HomePage() {
                         className="cursor-pointer hover:bg-accent/50"
                       >
                         <TableCell>
-                          <div className="flex items-center gap-1">
-                            {idx < 3 ? (
+                          <div className="flex items-center gap-1.5">
+                            {idx === 0 && (
                               <Trophy
-                                className={`h-4 w-4 ${idx === 0 ? "text-yellow-500" : idx === 1 ? "text-gray-400" : "text-amber-600"}`}
+                                className="h-4 w-4"
+                                style={{ color: "oklch(0.78 0.19 85)" }}
                               />
-                            ) : null}
+                            )}
+                            {idx === 1 && (
+                              <Trophy
+                                className="h-4 w-4"
+                                style={{ color: "oklch(0.65 0.03 260)" }}
+                              />
+                            )}
+                            {idx === 2 && (
+                              <Trophy
+                                className="h-4 w-4"
+                                style={{ color: "oklch(0.62 0.12 50)" }}
+                              />
+                            )}
                             <span className="font-semibold">{idx + 1}</span>
                           </div>
                         </TableCell>
@@ -259,7 +317,15 @@ export default function HomePage() {
                         </TableCell>
                         <TableCell className="text-right">
                           {penilaian ? (
-                            <Badge variant="secondary" className="font-bold">
+                            <Badge
+                              variant="secondary"
+                              className="font-bold"
+                              style={{
+                                background: "oklch(0.75 0.17 80 / 0.15)",
+                                color: "oklch(0.45 0.12 80)",
+                                border: "1px solid oklch(0.75 0.17 80 / 0.3)",
+                              }}
+                            >
                               {penilaian.skorTotal}
                             </Badge>
                           ) : (
@@ -280,7 +346,10 @@ export default function HomePage() {
 
       {/* Admin Pembantu */}
       {isNonAdminUser && (
-        <section className="py-8 px-4 bg-muted/50">
+        <section
+          className="py-8 px-4"
+          style={{ background: "oklch(0.95 0.02 145)" }}
+        >
           <div className="container mx-auto">
             <Card className="border-primary/20">
               <CardHeader>
